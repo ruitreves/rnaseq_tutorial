@@ -1,0 +1,168 @@
+---
+title: "Processing FASTQ Files"
+author: "Rui"
+date: "2025-02-20"
+output: html_document
+---
+
+# Introduction
+
+This document is meant to serve as a guide for processing bulk rna-seq data. The starting point of this guide is fastq files and the end result 
+will be a gene count matrix. This guide uses bash and R languages, and although not intended to be a tutorial in either, will take extra time to 
+explain and show how code works and why. Additionally, this guide makes use of several open source (i.e., free) softwares that will need to be 
+downloaded. The software described in this guide are not the only ones available, there are plently that could be substituted for each step.
+
+This guide assumes that each fastq file only contains data from one biological sample. The data presented here will be paired end. If you have multiple samples
+ in the same fastq file (this is called multiplexed), or both read pairs in the same fastq file (interleaved), then in order to follow this guide you must 
+ de-multiplex and de-interleave your 
+
+Fastq files can be very large, several GB each or larger. You will have to consider your computer's storage capabilities. All of the steps in this analysis will 
+require some file(s) as input and produce some other file(s) as output. The output files can also be large. For example, quality trimming of fastq files will 
+remove low quality reads/bases, and the output of this process is new fastq files, which, if your data is of high quality to begin with, will be only slightly 
+smaller than the original files. 
+
+Additionally, this process can be very resource intensive, requiring a lot of RAM. Your computer should have ample storage space and at least 64GB of RAM. 
+Not all computers are suitable for this process.
+
+## Overview
+
+The general procedure is as follows:
+
+Fastqs should be downloaded onto your computer, there are surely ways to perform this type of analysis without having the files stored locally but that is 
+beyond the scope of this guide. Usually, whoever created the fastq files (sequencing company, etc) will provide you with either an FTP (file transfer protocol) 
+link or a physical hard drive. If you have a physical hard drive containing the files, simply COPY them onto your computer, and maintain the original files on 
+the hard drive as a backup. If you have to download them through an FTP, follow the FTP instructions. Always be sure to maintain a backup of the fastq files, 
+incase you ever need them. 
+
+Fastq files should be accompanied by an MD5 file. Usually there is one MD5 file for each fastq file. An MD5 file is a checksum file that verifies the file's 
+data is intact. During transfers of large amount of data it is possible that something goes wrong, and the downloaded data is corrupted, even if only slighly. 
+You should create your own MD5 checksums for each fastq file and verify that it matches the one provided exactly. If not, try redownloading the corrupted files 
+and checksum again. Do this immediately, especially if downloaded through an FTP, as some providers will only keep the files for a short time. 
+
+Next, you should evaluate the quality of the fastq files using fastqc. This software will produce one html file for each fastq file (that you will open with your
+ web browser) showing the average data quality for all the reads in the file, any adapter content, and several other things. You can use this information to 
+inform your trimming step, which is next.
+
+Now you will trim your fastq files using trimmomatic. You can tell trimmomatic to trim low quality reads and bases according to your needs, and also use it to 
+trim adapter sequences. This step will result in new, trimmed fastq files. 
+
+The next step is mapping the trimmed fastq files to a reference genome using STAR. STAR requires its own special reference which must be created by supplying 
+a fasta (.fa) and gene annotation (.gtf) file. After creating the reference, we use it to map the reads. The result of this step is bam files (could be sam files 
+but I recommend bam). 
+
+Then, we use featureCounts to create gene counts from the bam files. This step requires that we supply a gene annotation file (.gtf, the same one used when creating 
+the STAR reference) and a bam file. The result is a file that contains the counts for each gene from that bam file, which can be in .txt or .csv or whatever 
+format. 
+
+Finally, the output from featureCounts can be processed using something like R to make a gene matrix. 
+
+# Part 0: Getting set up and a few things about bash
+
+In order to keep your analysis organized, you should make a new folder on your computer dedicated to the experiment you are working with. Additionally, 
+you should have subfolders to keep different steps of the process separate. For example, at the beginning I have a main folder called "rnaseq_tutorial", and
+within it I have a folder called "fastq" that contains all the fastq files for this tutorial. I'll make new folders for each of the resulting files as we go, but
+code files and scripts can stay just in "rnaseq_tutorial". 
+
+For the purposes of this tutorial, I've created dummy fastq files by taking the first 100 reads of a cohort of files. This is mostly just to demonstrate
+how to work with fastq files, we won't actually process any of them. 
+
+Now a few basics about bash. I'll show some of the common things we'll need to do.
+
+To make a new folder use the mkdir (make directory) command
+
+```{bash eval = FALSE}
+mkdir new_folder
+```
+
+To make a new folder and subfolders at the same time, use mkdir -p 
+
+```{bash eval = FALSE}
+mkdir -p new_folder/new_subfolder
+```
+
+We could achieve the same result by doing this: 
+
+```{bash eval = FALSE}
+mkdir new_folder
+mkdir new_folder/new_subfolder
+```
+
+But using mkdir -p is quicker.
+
+The echo command is also useful. echo in bash is akin to print in other programming languages.
+
+Like this:
+
+```{bash}
+echo "Hello World"
+```
+
+We can also do this:
+
+```{bash}
+echo fastq/*
+```
+
+This is all the fastq files in the fastq directory. The * in fastq/* means "everything". i.e., echo (print) everything inside the fastq folder.
+
+We can also use the * with other characters to be more specific.
+
+```{bash}
+echo fastq/*_1.fq 
+```
+
+This printed all the _1.fq files (all the forward reads). You will see more examples of this as we go.
+
+Next we'll look at for loops, which will be used a lot. The basic idea of a for loop is as follows: 
+
+for Each_Item in Some_List; do
+
+    Some_Task
+
+done
+
+For example: 
+
+```{bash}
+for file in fastq/*; do
+    echo $file
+done
+```
+
+The "$" in "$file" tells bash that "file" is a variable.
+
+Now if we didnt want the entire file path when printing all the file names, we can use the basename comman:
+
+```{bash}
+for file in fastq/*; do
+    echo $(basename $file)
+done
+```
+
+We can also use basename to remove parts of the file name:
+
+```{bash}
+for file in fastq/*; do
+    echo $(basename $file .fq)
+done
+```
+
+There is much more we could demonstrate, but for now that is all. We will proceed with the analysis.
+
+# Part1: fastqc for quality control insights
+
+Fastqc (https://www.bioinformatics.babraham.ac.uk/projects/download.html#fastqc) is a program that produces reports about fastq data. From these reports we can
+determine the overall quality of our data and how aggressively we need to trim it. 
+
+Fastqc is easy to use, we don't even have to use a for loop. We can simply pass a list (fastq/* is a list) and it will handle the rest.
+
+Before we use it, we'll make a place to put it's output:
+
+```{bash eval = FALSE}
+mkdir -p quality_report/before_trimming
+```
+
+Notice that we're putting these reports in a before_trimming subfolder... We will run fastqc again after trimming to make sure we trimmed well enough. 
+
+
+
