@@ -115,11 +115,13 @@ This printed all the _1.fq files (all the forward reads). You will see more exam
 
 Next we'll look at for loops, which will be used a lot. The basic idea of a for loop is as follows: 
 
+```{bash eval = FALSE}
 for Each_Item in Some_List; do
 
     Some_Task
 
 done
+```
 
 For example: 
 
@@ -129,9 +131,9 @@ for file in fastq/*; do
 done
 ```
 
-The "$" in "$file" tells bash that "file" is a variable.
+The "\$" in "$file" tells bash that "file" is a variable.
 
-Now if we didnt want the entire file path when printing all the file names, we can use the basename comman:
+Now if we didnt want the entire file path when printing all the file names, we can use the basename command:
 
 ```{bash}
 for file in fastq/*; do
@@ -143,7 +145,7 @@ We can also use basename to remove parts of the file name:
 
 ```{bash}
 for file in fastq/*; do
-    echo $(basename $file .fq)
+    echo $(basename $file .fastq.gz)
 done
 ```
 
@@ -158,11 +160,31 @@ Fastqc is easy to use, we don't even have to use a for loop. We can simply pass 
 
 Before we use it, we'll make a place to put it's output:
 
-```{bash eval = FALSE}
+```{bash}
 mkdir -p quality_report/before_trimming
 ```
 
 Notice that we're putting these reports in a before_trimming subfolder... We will run fastqc again after trimming to make sure we trimmed well enough. 
 
+Now to run fastqc. We use the --outdir argument to tell fastqc where to put the output. We'll also use the --quite argument to suppress all progress messages in order to
+ save some page space. I'll add some of what the output would be so you can see. 
 
+```{bash}
+fastqc fastq/* --outdir=quality_report/before_trimming
+```
+
+application/gzip
+application/gzip
+Started analysis of Sample-312_2024-028-1-S4_R1.fastq.gz
+application/gzip
+application/gzip
+application/gzip
+application/gzip
+application/gzip
+application/gzip
+Approx 5% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+Approx 10% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+... etc. 
+
+I need to find some way to be able to show these reports
 

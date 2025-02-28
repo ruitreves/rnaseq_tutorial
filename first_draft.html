@@ -463,275 +463,62 @@ other programming languages.</p>
 <pre><code>## Hello World</code></pre>
 <p>We can also do this:</p>
 <pre class="bash"><code>echo fastq/*</code></pre>
-<pre><code>## fastq/demo_FC672_1.fq fastq/demo_FC672_2.fq fastq/demo_FC673_1.fq fastq/demo_FC673_2.fq fastq/demo_FC675_1.fq fastq/demo_FC675_2.fq fastq/demo_FC677_1.fq fastq/demo_FC677_2.fq fastq/demo_FC678_1.fq fastq/demo_FC678_2.fq fastq/demo_FC680_1.fq fastq/demo_FC680_2.fq fastq/demo_FC683_1.fq fastq/demo_FC683_2.fq fastq/demo_FC684_1.fq fastq/demo_FC684_2.fq fastq/demo_FC685_1.fq fastq/demo_FC685_2.fq fastq/demo_FC686_1.fq fastq/demo_FC686_2.fq fastq/demo_FC689_1.fq fastq/demo_FC689_2.fq fastq/demo_FC690_1.fq fastq/demo_FC690_2.fq fastq/demo_FC692_1.fq fastq/demo_FC692_2.fq fastq/demo_FC693_1.fq fastq/demo_FC693_2.fq fastq/demo_FC699_1.fq fastq/demo_FC699_2.fq fastq/demo_FC700_1.fq fastq/demo_FC700_2.fq fastq/demo_FC704_1.fq fastq/demo_FC704_2.fq fastq/demo_FC705_1.fq fastq/demo_FC705_2.fq fastq/demo_FC708_1.fq fastq/demo_FC708_2.fq fastq/demo_FC710_1.fq fastq/demo_FC710_2.fq fastq/demo_FC711_1.fq fastq/demo_FC711_2.fq fastq/demo_FC712_1.fq fastq/demo_FC712_2.fq fastq/demo_FC716_1.fq fastq/demo_FC716_2.fq fastq/demo_FC717_1.fq fastq/demo_FC717_2.fq fastq/demo_FC720_1.fq fastq/demo_FC720_2.fq fastq/demo_FC723_1.fq fastq/demo_FC723_2.fq fastq/demo_FC728_1.fq fastq/demo_FC728_2.fq fastq/demo_FC729_1.fq fastq/demo_FC729_2.fq fastq/demo_FC730_1.fq fastq/demo_FC730_2.fq fastq/demo_FC733_1.fq fastq/demo_FC733_2.fq fastq/demo_FC734_1.fq fastq/demo_FC734_2.fq fastq/demo_FC737_1.fq fastq/demo_FC737_2.fq fastq/demo_FC739_1.fq fastq/demo_FC739_2.fq fastq/demo_FC740_1.fq fastq/demo_FC740_2.fq fastq/demo_FC743_1.fq fastq/demo_FC743_2.fq fastq/demo_FC744_1.fq fastq/demo_FC744_2.fq fastq/demo_FC745_1.fq fastq/demo_FC745_2.fq fastq/demo_FC747_1.fq fastq/demo_FC747_2.fq fastq/demo_FC748_1.fq fastq/demo_FC748_2.fq fastq/demo_FC749_1.fq fastq/demo_FC749_2.fq</code></pre>
+<pre><code>## fastq/Sample-312_2024-028-1-S4_R1.fastq.gz fastq/Sample-312_2024-028-1-S4_R2.fastq.gz fastq/Sample-319_2024-028-1-S6_R1.fastq.gz fastq/Sample-319_2024-028-1-S6_R2.fastq.gz fastq/Sample-347_2024-028-1-S15_R1.fastq.gz fastq/Sample-347_2024-028-1-S15_R2.fastq.gz fastq/Sample-375_2024-028-1-S24_R1.fastq.gz fastq/Sample-375_2024-028-1-S24_R2.fastq.gz</code></pre>
 <p>This is all the fastq files in the fastq directory. The * in fastq/*
 means “everything”. i.e., echo (print) everything inside the fastq
 folder.</p>
 <p>We can also use the * with other characters to be more specific.</p>
 <pre class="bash"><code>echo fastq/*_1.fq </code></pre>
-<pre><code>## fastq/demo_FC672_1.fq fastq/demo_FC673_1.fq fastq/demo_FC675_1.fq fastq/demo_FC677_1.fq fastq/demo_FC678_1.fq fastq/demo_FC680_1.fq fastq/demo_FC683_1.fq fastq/demo_FC684_1.fq fastq/demo_FC685_1.fq fastq/demo_FC686_1.fq fastq/demo_FC689_1.fq fastq/demo_FC690_1.fq fastq/demo_FC692_1.fq fastq/demo_FC693_1.fq fastq/demo_FC699_1.fq fastq/demo_FC700_1.fq fastq/demo_FC704_1.fq fastq/demo_FC705_1.fq fastq/demo_FC708_1.fq fastq/demo_FC710_1.fq fastq/demo_FC711_1.fq fastq/demo_FC712_1.fq fastq/demo_FC716_1.fq fastq/demo_FC717_1.fq fastq/demo_FC720_1.fq fastq/demo_FC723_1.fq fastq/demo_FC728_1.fq fastq/demo_FC729_1.fq fastq/demo_FC730_1.fq fastq/demo_FC733_1.fq fastq/demo_FC734_1.fq fastq/demo_FC737_1.fq fastq/demo_FC739_1.fq fastq/demo_FC740_1.fq fastq/demo_FC743_1.fq fastq/demo_FC744_1.fq fastq/demo_FC745_1.fq fastq/demo_FC747_1.fq fastq/demo_FC748_1.fq fastq/demo_FC749_1.fq</code></pre>
+<pre><code>## fastq/*_1.fq</code></pre>
 <p>This printed all the _1.fq files (all the forward reads). You will
 see more examples of this as we go.</p>
 <p>Next we’ll look at for loops, which will be used a lot. The basic
 idea of a for loop is as follows:</p>
-<p>for Each_Item in Some_List; do</p>
-<pre><code>Some_Task</code></pre>
-<p>done</p>
+<pre class="bash"><code>for Each_Item in Some_List; do
+
+    Some_Task
+
+done</code></pre>
 <p>For example:</p>
 <pre class="bash"><code>for file in fastq/*; do
     echo $file
 done</code></pre>
-<pre><code>## fastq/demo_FC672_1.fq
-## fastq/demo_FC672_2.fq
-## fastq/demo_FC673_1.fq
-## fastq/demo_FC673_2.fq
-## fastq/demo_FC675_1.fq
-## fastq/demo_FC675_2.fq
-## fastq/demo_FC677_1.fq
-## fastq/demo_FC677_2.fq
-## fastq/demo_FC678_1.fq
-## fastq/demo_FC678_2.fq
-## fastq/demo_FC680_1.fq
-## fastq/demo_FC680_2.fq
-## fastq/demo_FC683_1.fq
-## fastq/demo_FC683_2.fq
-## fastq/demo_FC684_1.fq
-## fastq/demo_FC684_2.fq
-## fastq/demo_FC685_1.fq
-## fastq/demo_FC685_2.fq
-## fastq/demo_FC686_1.fq
-## fastq/demo_FC686_2.fq
-## fastq/demo_FC689_1.fq
-## fastq/demo_FC689_2.fq
-## fastq/demo_FC690_1.fq
-## fastq/demo_FC690_2.fq
-## fastq/demo_FC692_1.fq
-## fastq/demo_FC692_2.fq
-## fastq/demo_FC693_1.fq
-## fastq/demo_FC693_2.fq
-## fastq/demo_FC699_1.fq
-## fastq/demo_FC699_2.fq
-## fastq/demo_FC700_1.fq
-## fastq/demo_FC700_2.fq
-## fastq/demo_FC704_1.fq
-## fastq/demo_FC704_2.fq
-## fastq/demo_FC705_1.fq
-## fastq/demo_FC705_2.fq
-## fastq/demo_FC708_1.fq
-## fastq/demo_FC708_2.fq
-## fastq/demo_FC710_1.fq
-## fastq/demo_FC710_2.fq
-## fastq/demo_FC711_1.fq
-## fastq/demo_FC711_2.fq
-## fastq/demo_FC712_1.fq
-## fastq/demo_FC712_2.fq
-## fastq/demo_FC716_1.fq
-## fastq/demo_FC716_2.fq
-## fastq/demo_FC717_1.fq
-## fastq/demo_FC717_2.fq
-## fastq/demo_FC720_1.fq
-## fastq/demo_FC720_2.fq
-## fastq/demo_FC723_1.fq
-## fastq/demo_FC723_2.fq
-## fastq/demo_FC728_1.fq
-## fastq/demo_FC728_2.fq
-## fastq/demo_FC729_1.fq
-## fastq/demo_FC729_2.fq
-## fastq/demo_FC730_1.fq
-## fastq/demo_FC730_2.fq
-## fastq/demo_FC733_1.fq
-## fastq/demo_FC733_2.fq
-## fastq/demo_FC734_1.fq
-## fastq/demo_FC734_2.fq
-## fastq/demo_FC737_1.fq
-## fastq/demo_FC737_2.fq
-## fastq/demo_FC739_1.fq
-## fastq/demo_FC739_2.fq
-## fastq/demo_FC740_1.fq
-## fastq/demo_FC740_2.fq
-## fastq/demo_FC743_1.fq
-## fastq/demo_FC743_2.fq
-## fastq/demo_FC744_1.fq
-## fastq/demo_FC744_2.fq
-## fastq/demo_FC745_1.fq
-## fastq/demo_FC745_2.fq
-## fastq/demo_FC747_1.fq
-## fastq/demo_FC747_2.fq
-## fastq/demo_FC748_1.fq
-## fastq/demo_FC748_2.fq
-## fastq/demo_FC749_1.fq
-## fastq/demo_FC749_2.fq</code></pre>
-<p>The “<span class="math inline">\(&quot; in &quot;\)</span>file” tells
-bash that “file” is a variable.</p>
+<pre><code>## fastq/Sample-312_2024-028-1-S4_R1.fastq.gz
+## fastq/Sample-312_2024-028-1-S4_R2.fastq.gz
+## fastq/Sample-319_2024-028-1-S6_R1.fastq.gz
+## fastq/Sample-319_2024-028-1-S6_R2.fastq.gz
+## fastq/Sample-347_2024-028-1-S15_R1.fastq.gz
+## fastq/Sample-347_2024-028-1-S15_R2.fastq.gz
+## fastq/Sample-375_2024-028-1-S24_R1.fastq.gz
+## fastq/Sample-375_2024-028-1-S24_R2.fastq.gz</code></pre>
+<p>The “$” in “$file” tells bash that “file” is a variable.</p>
 <p>Now if we didnt want the entire file path when printing all the file
-names, we can use the basename comman:</p>
+names, we can use the basename command:</p>
 <pre class="bash"><code>for file in fastq/*; do
     echo $(basename $file)
 done</code></pre>
-<pre><code>## demo_FC672_1.fq
-## demo_FC672_2.fq
-## demo_FC673_1.fq
-## demo_FC673_2.fq
-## demo_FC675_1.fq
-## demo_FC675_2.fq
-## demo_FC677_1.fq
-## demo_FC677_2.fq
-## demo_FC678_1.fq
-## demo_FC678_2.fq
-## demo_FC680_1.fq
-## demo_FC680_2.fq
-## demo_FC683_1.fq
-## demo_FC683_2.fq
-## demo_FC684_1.fq
-## demo_FC684_2.fq
-## demo_FC685_1.fq
-## demo_FC685_2.fq
-## demo_FC686_1.fq
-## demo_FC686_2.fq
-## demo_FC689_1.fq
-## demo_FC689_2.fq
-## demo_FC690_1.fq
-## demo_FC690_2.fq
-## demo_FC692_1.fq
-## demo_FC692_2.fq
-## demo_FC693_1.fq
-## demo_FC693_2.fq
-## demo_FC699_1.fq
-## demo_FC699_2.fq
-## demo_FC700_1.fq
-## demo_FC700_2.fq
-## demo_FC704_1.fq
-## demo_FC704_2.fq
-## demo_FC705_1.fq
-## demo_FC705_2.fq
-## demo_FC708_1.fq
-## demo_FC708_2.fq
-## demo_FC710_1.fq
-## demo_FC710_2.fq
-## demo_FC711_1.fq
-## demo_FC711_2.fq
-## demo_FC712_1.fq
-## demo_FC712_2.fq
-## demo_FC716_1.fq
-## demo_FC716_2.fq
-## demo_FC717_1.fq
-## demo_FC717_2.fq
-## demo_FC720_1.fq
-## demo_FC720_2.fq
-## demo_FC723_1.fq
-## demo_FC723_2.fq
-## demo_FC728_1.fq
-## demo_FC728_2.fq
-## demo_FC729_1.fq
-## demo_FC729_2.fq
-## demo_FC730_1.fq
-## demo_FC730_2.fq
-## demo_FC733_1.fq
-## demo_FC733_2.fq
-## demo_FC734_1.fq
-## demo_FC734_2.fq
-## demo_FC737_1.fq
-## demo_FC737_2.fq
-## demo_FC739_1.fq
-## demo_FC739_2.fq
-## demo_FC740_1.fq
-## demo_FC740_2.fq
-## demo_FC743_1.fq
-## demo_FC743_2.fq
-## demo_FC744_1.fq
-## demo_FC744_2.fq
-## demo_FC745_1.fq
-## demo_FC745_2.fq
-## demo_FC747_1.fq
-## demo_FC747_2.fq
-## demo_FC748_1.fq
-## demo_FC748_2.fq
-## demo_FC749_1.fq
-## demo_FC749_2.fq</code></pre>
+<pre><code>## Sample-312_2024-028-1-S4_R1.fastq.gz
+## Sample-312_2024-028-1-S4_R2.fastq.gz
+## Sample-319_2024-028-1-S6_R1.fastq.gz
+## Sample-319_2024-028-1-S6_R2.fastq.gz
+## Sample-347_2024-028-1-S15_R1.fastq.gz
+## Sample-347_2024-028-1-S15_R2.fastq.gz
+## Sample-375_2024-028-1-S24_R1.fastq.gz
+## Sample-375_2024-028-1-S24_R2.fastq.gz</code></pre>
 <p>We can also use basename to remove parts of the file name:</p>
 <pre class="bash"><code>for file in fastq/*; do
-    echo $(basename $file .fq)
+    echo $(basename $file .fastq.gz)
 done</code></pre>
-<pre><code>## demo_FC672_1
-## demo_FC672_2
-## demo_FC673_1
-## demo_FC673_2
-## demo_FC675_1
-## demo_FC675_2
-## demo_FC677_1
-## demo_FC677_2
-## demo_FC678_1
-## demo_FC678_2
-## demo_FC680_1
-## demo_FC680_2
-## demo_FC683_1
-## demo_FC683_2
-## demo_FC684_1
-## demo_FC684_2
-## demo_FC685_1
-## demo_FC685_2
-## demo_FC686_1
-## demo_FC686_2
-## demo_FC689_1
-## demo_FC689_2
-## demo_FC690_1
-## demo_FC690_2
-## demo_FC692_1
-## demo_FC692_2
-## demo_FC693_1
-## demo_FC693_2
-## demo_FC699_1
-## demo_FC699_2
-## demo_FC700_1
-## demo_FC700_2
-## demo_FC704_1
-## demo_FC704_2
-## demo_FC705_1
-## demo_FC705_2
-## demo_FC708_1
-## demo_FC708_2
-## demo_FC710_1
-## demo_FC710_2
-## demo_FC711_1
-## demo_FC711_2
-## demo_FC712_1
-## demo_FC712_2
-## demo_FC716_1
-## demo_FC716_2
-## demo_FC717_1
-## demo_FC717_2
-## demo_FC720_1
-## demo_FC720_2
-## demo_FC723_1
-## demo_FC723_2
-## demo_FC728_1
-## demo_FC728_2
-## demo_FC729_1
-## demo_FC729_2
-## demo_FC730_1
-## demo_FC730_2
-## demo_FC733_1
-## demo_FC733_2
-## demo_FC734_1
-## demo_FC734_2
-## demo_FC737_1
-## demo_FC737_2
-## demo_FC739_1
-## demo_FC739_2
-## demo_FC740_1
-## demo_FC740_2
-## demo_FC743_1
-## demo_FC743_2
-## demo_FC744_1
-## demo_FC744_2
-## demo_FC745_1
-## demo_FC745_2
-## demo_FC747_1
-## demo_FC747_2
-## demo_FC748_1
-## demo_FC748_2
-## demo_FC749_1
-## demo_FC749_2</code></pre>
+<pre><code>## Sample-312_2024-028-1-S4_R1
+## Sample-312_2024-028-1-S4_R2
+## Sample-319_2024-028-1-S6_R1
+## Sample-319_2024-028-1-S6_R2
+## Sample-347_2024-028-1-S15_R1
+## Sample-347_2024-028-1-S15_R2
+## Sample-375_2024-028-1-S24_R1
+## Sample-375_2024-028-1-S24_R2</code></pre>
+<p>There is much more we could demonstrate, but for now that is all. We
+will proceed with the analysis.</p>
 </div>
 <div id="part1-fastqc-for-quality-control-insights" class="section level1">
 <h1>Part1: fastqc for quality control insights</h1>
@@ -739,6 +526,200 @@ done</code></pre>
 is a program that produces reports about fastq data. From these reports
 we can determine the overall quality of our data and how aggressively we
 need to trim it.</p>
+<p>Fastqc is easy to use, we don’t even have to use a for loop. We can
+simply pass a list (fastq/* is a list) and it will handle the rest.</p>
+<p>Before we use it, we’ll make a place to put it’s output:</p>
+<pre class="bash"><code>mkdir -p quality_report/before_trimming</code></pre>
+<p>Notice that we’re putting these reports in a before_trimming
+subfolder… We will run fastqc again after trimming to make sure we
+trimmed well enough.</p>
+<p>Now to run fastqc. We use the –outdir argument to tell fastqc where
+to put the output. We’ll also use the –quite argument to suppress all
+progress messages in order to save some page space. I’ll add some of
+what the output would be so you can see.</p>
+<pre class="bash"><code>fastqc fastq/* --outdir=quality_report/before_trimming</code></pre>
+<pre><code>## application/gzip
+## application/gzip
+## Started analysis of Sample-312_2024-028-1-S4_R1.fastq.gz
+## application/gzip
+## application/gzip
+## application/gzip
+## application/gzip
+## application/gzip
+## application/gzip
+## Approx 5% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 10% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 15% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 20% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 25% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 30% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 35% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 40% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 45% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 50% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 55% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 60% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 65% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 70% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 75% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 80% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 85% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 90% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Approx 95% complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Analysis complete for Sample-312_2024-028-1-S4_R1.fastq.gz
+## Started analysis of Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 5% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 10% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 15% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 20% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 25% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 30% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 35% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 40% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 45% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 50% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 55% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 60% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 65% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 70% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 75% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 80% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 85% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 90% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Approx 95% complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Analysis complete for Sample-312_2024-028-1-S4_R2.fastq.gz
+## Started analysis of Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 5% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 10% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 15% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 20% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 25% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 30% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 35% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 40% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 45% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 50% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 55% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 60% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 65% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 70% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 75% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 80% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 85% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 90% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Approx 95% complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Analysis complete for Sample-319_2024-028-1-S6_R1.fastq.gz
+## Started analysis of Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 5% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 10% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 15% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 20% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 25% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 30% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 35% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 40% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 45% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 50% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 55% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 60% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 65% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 70% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 75% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 80% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 85% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 90% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Approx 95% complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Analysis complete for Sample-319_2024-028-1-S6_R2.fastq.gz
+## Started analysis of Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 5% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 10% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 15% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 20% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 25% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 30% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 35% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 40% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 45% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 50% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 55% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 60% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 65% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 70% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 75% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 80% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 85% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 90% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Approx 95% complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Analysis complete for Sample-347_2024-028-1-S15_R1.fastq.gz
+## Started analysis of Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 5% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 10% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 15% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 20% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 25% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 30% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 35% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 40% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 45% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 50% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 55% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 60% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 65% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 70% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 75% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 80% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 85% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 90% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Approx 95% complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Analysis complete for Sample-347_2024-028-1-S15_R2.fastq.gz
+## Started analysis of Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 5% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 10% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 15% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 20% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 25% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 30% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 35% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 40% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 45% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 50% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 55% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 60% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 65% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 70% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 75% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 80% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 85% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 90% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Approx 95% complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Analysis complete for Sample-375_2024-028-1-S24_R1.fastq.gz
+## Started analysis of Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 5% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 10% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 15% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 20% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 25% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 30% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 35% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 40% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 45% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 50% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 55% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 60% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 65% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 70% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 75% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 80% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 85% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 90% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Approx 95% complete for Sample-375_2024-028-1-S24_R2.fastq.gz
+## Analysis complete for Sample-375_2024-028-1-S24_R2.fastq.gz</code></pre>
+<p>application/gzip application/gzip Started analysis of
+Sample-312_2024-028-1-S4_R1.fastq.gz application/gzip application/gzip
+application/gzip application/gzip application/gzip application/gzip
+Approx 5% complete for Sample-312_2024-028-1-S4_R1.fastq.gz Approx 10%
+complete for Sample-312_2024-028-1-S4_R1.fastq.gz … etc.</p>
+<p>I need to find some way to be able to show these reports</p>
 </div>
 
 
