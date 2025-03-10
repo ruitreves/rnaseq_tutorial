@@ -4,11 +4,11 @@
 
 fastq_location="fastq"
 
-# mkdir -p quality_report/before_trimming
+mkdir -p quality_report/before_trimming
 
 # run fastqc
 
-# fastqc ${fastq_location}/* --outdir quality_report/before_trimming
+fastqc ${fastq_location}/* --outdir quality_report/before_trimming
 
 # then use a for loop to trim all fastq file with trimmomatic 
 

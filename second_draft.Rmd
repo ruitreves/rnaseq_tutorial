@@ -14,11 +14,17 @@ The way this guide will work is as follows:
 
 First we will see a script of the entire process (or pipeline, if you like). 
 
-Next we will look individually at the steps of the process.
+Next we will look individually at the steps of the process followed by a deeper dive into fastq files.
 
 Last we will dig into some of the code used during the process.
 
 Feel free to jump to whichever section you need.
+
+Here is a brief overview:
+
+Fastq files are generated from biological samples and contain raw biological sequence data (ATCG etc). Fastq files require trimming to remove low quality information
+as well as contamination. Then, fastq files are mapped to a reference genome in order to identify genes; this step results in bam files. Bam files can then be 
+processed into gene level counts, and the data can be processed in something like R. 
 
 # Part 1: The Entire Process
 
@@ -153,4 +159,192 @@ path and BE CAREFUL! You can disrupt important processes on your computer if you
 should be sure of what you're doing before you remove anything from your path or do anything to change it. 
 
 ## Step 1: Running fastqc
+
+Fastqc is simple and easy to use. The generic way to use it is as follows:
+
+```{bash eval = FALSE}
+path/to/fastqc path/to/fastq/files/sample.fastq --outdir=path/to/fastqc_reports
+```
+
+Or, instead of passing just one fastq file as the argument, we can pass (supply as an arugment) a list of fastq files. 
+
+```{bash eval = FALSE}
+path/to/fastqc path/to/fastq/files/*.fastq --outdir=path/to/fastqc_reports
+```
+
+Where path/to/fastq/files/*.fastq is a list of all files ending with ".fastq" in the folder path/to/fastq/files.
+
+Fastqc is the only software in the main part of the pipeline that we can pass a list. Each of the others require that we pass each file individually.
+This is the reason why we do not use a for loop for fastqc, but do use a for loop for each of the others. 
+
+You can read more about fastqc here: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
+
+## Step 2: Running Trimmomatic
+
+As mentioned previously, the subsequent steps in the script involve using for loops to process our data. For loops will be discussed further in Part 3, 
+and here we will only focus on using trimmomatic. 
+
+Here is a generic example of using trimmomatic. 
+
+```{bash eval = FALSE}
+java -jar path/to/trimmomatic.jar \
+    PE -threads 16 -phred33 \
+    path/to/fastq/files/sample1_R1.fastq path/to/fastq/files/sample1_R2.fastq \
+    trimmed_fastq/trimmed_paired_sample1_R1.fastq trimmed_fastq/trimmed_unpaired_sample1_R1.fastq \
+    trimmed_fastq/trimmed_paired_sample1_R2.fastq trimmed_fastq/trimmed_unpaired_sample1_R2.fastq \
+    ILLUMINACLIP:/Users/hardestylab4/Desktop/star/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10:2:TRUE LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 \
+	MINLEN:36
+```
+
+trimmomatic is a java application, which means that we have to use java to run it. Thats why the first line starts with calling java. A .jar file is like
+a java executable, and by using "-jar" we tell java to expect a .jar file. Then we specify which .jar file, "path/to/trimmomatic.jar". 
+
+The reason we put a "\" at the end of each line (except the last line) is because we are telling bash that although we are done writing on the current line,
+dont execute the code yet. Instead, expect more input on the next line. This isnt a requirement, it just makes the code easier for us to read and write, 
+since we dont have to cram all our code onto the same line. 
+
+PE is an "option" of trimmomatic, where we specify to trimmomatic that were supplying Pair End fastq data. -threads 16 and -phred33 are also options, 
+the former specifies how many computer threads (think computing power) to use and the latter tells trimmomatic how the quality information of the fastq files
+is encoded. These fastq files use phred33 encoding, but some use phred64. More on this later in the section about fastq files. 
+
+The next line: "path/to/fastq/files/sample1_R1.fastq path/to/fastq/files/sample1_R2.fastq \" is our input. We pass in the forward read first and then the 
+reverse read. 
+
+Next: "trimmed_fastq/trimmed_paired_sample1_R1.fastq trimmed_fastq/trimmed_unpaired_sample1_R1.fastq \" is the first part of the output. This is the output
+for the forward read only. We're telling trimmomatic to put this output in the folder "trimmed_paired", and then specifying the name of the output file with
+"trimmed_paired_sample1_R1.fastq". The other part also goes to the same folder, but its "trimmed_unpaired_sample1_R1.fastq", which consists of the mates
+of the reads which were filtered out of the other part of the pair (i.e., the reverse read). Put another way, when a certain read in either part of the 
+pair (forward or reverse) is discarded during the trimming process but the same read in the other part of the pair is not discarded, we end up with 
+unpaired reads. If you're utterly confused about how the same trimming process could remove one part of a pair and not the other, see the section about 
+fastq files. For our purposes here, we cant use the unpaired reads since the rest of the analysis requires that we use paired reads. The unpaired reads
+are not useless, but their uses are beyond the scope of this guide. 
+
+The following line is the same as the previous one except for the reverse read.
+
+The line: ILLUMINACLIP:/Users/hardestylab4/Desktop/star/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10:2:TRUE LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 \
+is specifying the trimming options we want to use. The trimmomatic manual (http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf)
+will be required in order to understand everything happening here. Briefly, the ILLUMINACLIP option is how trimmomatic removes adapter sequences, and the 
+file path following it leads to TruSeq3-PE-2.fa, which comes with trimmomatic and includes known adapter sequences that we want to remove. This adapter file
+is not suitable for every cohort of fastq files. In order to reliably remove adapter sequences you need to know what the adapter sequences actually are. 
+However, lots of sequencing companies use the same adapters, and trimmomatic's adapter files are usually pretty good. 
+
+The 2:30:10:2:TRUE is telling trimmomatic how to find adapter sequences and trim them. The explanation of each part is best left to the manual, but we will discuss the last
+part: "TRUE". By specifying TRUE here, we tell trimmomatic to keep both parts of a read pair even if one part is clipped (i.e., trimmed) significantly due 
+to adapter sequnce contamination. This does not, however, override the quality trimming step. So even if we keep one part of a read past this step, we could
+still end up filtering it out later, and thus its mate would end up in an unpaired output file. 
+
+LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 is for quality trimming, and the explanation of these is best left to the manual. 
+
+Last, we specify MINLEN, which is the minimum length of a sequence to keep. 
+
+## Step 3: Running STAR
+
+STAR requires a lot of RAM. You should be sure your computer is suffient to use it before starting. Find the manual here: 
+https://physiology.med.cornell.edu/faculty/skrabanek/lab/angsd/lecture_notes/STARmanual.pdf.
+
+Before using STAR as we did in the script above, we have to generate a special genome index that STAR can use. Here is one way to do it:
+
+```{bash eval = FALSE}
+STAR --runThreadN 8 \
+    --runMode genomeGenerate \
+    --genomeDir data/index_39 \
+    --genomeFastaFiles data/ref/Mus_musculus.GRCm39.dna.primary_assembly.fa \
+    --sjdbGTFfile data/ref/Mus_musculus.GRCm39.112.gtf \
+    --sjdbOverhang 149 \
+```
+
+The breakdown of this code will be more brief than in the previous step. 
+
+First, we call STAR and tell it to run in genomeGenerate mode. We then use genomeDir to tell STAR where to put its newly generated reference.
+We supply a fasta (.fa) file of genome sequences as well as a gene annotation file (.gtf). You only have to do this step once for each genome of interest
+to you, or if a newer versions of the genome becomes available or something like that. What I did is created a directory on my computer for all of my STAR
+stuff to go. You may have noticed this in the trimmomatic step: ILLUMINACLIP:/Users/hardestylab4/Desktop/star/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa. 
+and of course also in the STAR step: --genomeDir /Users/hardestylab4/Desktop/star/data/index_39. I keep trimmomatic in this directory as well just because
+its conveinient (? spelling) 
+
+After generating the index, we can run STAR. Here is a generic use case:
+
+```{bash eval = FALSE}
+STAR --runThreadN 16 \
+    --readFilesIn trimmed_fastq/trimmed_paired_sample1_R1.fastq trimmed_fastq/trimmed_paired_sample1_R2.fastq \
+    --genomeDir /Users/hardestylab4/Desktop/star/data/index_39 \
+    --outSAMtype BAM SortedByCoordinate \
+    --outFileNamePrefix bams/sample1
+```
+
+We first call STAR and pass our pair of input files. We specify the reference genome and how to format the output. In this case, we want sorted bam files.
+We also specify a output file name prefix. This will have STAR name each output file as bams/sample1somethingsomethingsomething. The "bams/" part at the 
+beginning is meant to send the files to a folder called "bams". In addition to the bam files, STAR will output a log for each bam file it creates, which can be used to 
+assess whether your STAR parameters are too strict, etc. 
+
+## Step 4: Running featureCounts
+
+The last step in the pipeline uses bam files to generate gene-level counts. Here is an example: 
+
+```{bash eval = FALSE}
+featureCounts --largestOverlap -a /Users/hardestylab4/Desktop/star/data/ref/Mus_musculus.GRCm39.112.gtf \
+    -t exon -g gene_id -s 0 -p --countReadPairs -T 8 \
+    -o counts/sample1_counts.txt sample1.bam
+```
+
+We start by calling the program, specify some options and the path to our gene annotation file (Mus_musculus.GRCm39.112.gtf). The last line specifies the output and 
+the input. You can read about featureCounts and the options used here in the manual https://subread.sourceforge.net/SubreadUsersGuide.pdf. 
+
+The output of featureCounts is a .txt file (you could have it output .csv, .tsv, etc. by simply changing the file extension in the output). One output file will be created
+for each input file. In order to make a gene count matrix that includes each sample, some further processing is necessary. This further processing will be done in R, and 
+demonstrated in the following step. featureCounts also outputs a summary file for each input file that gives statistics about the process. We wont use these in
+the next step. 
+
+## Step 5: Making the Gene Count Matrix
+
+The first thing we will do is organize the folder where the count files are. We will leave each of the count files in the counts/ folder, but move all the count
+summary files to a new directory inside the counts folder, counts/summary. We achieve this with bash:
+
+```{bash eval = FALSE}
+mkdir counts/summary
+mv counts/*.summary counts/summary
+```
+
+Now each of the summary files is in counts/summary. We can now use R to create a gene count matrix from the count files.
+
+```{r}
+count_files <- list.files("counts", full.names = TRUE, pattern = ".txt")
+read_in <- lapply(count_files, read.table, header = TRUE)
+print(head(read_in[[1]]))
+```
+
+These look a bit messy, so we will clean them up. We only really want the Geneid column and the bams.Sample.312Aligned.sortedByCoord.out.bam column, i.e.,
+the 1st and 7th columns.
+
+```{r}
+counts <- lapply(read_in, function(x) {
+    temp <- x[, c(1, 7)]
+    return(temp)
+})
+print(head(counts[[1]]))
+```
+
+Now we have only the columns we want. The next thing we must do is change the first column, Geneid, to be the rownames of each of our matrices, then combine
+them all into one matrix aligned on the new rownames (Geneid). We'll also change the column names to from something like "bams.Sample.312Aligned.sortedByCoord.out.bam"
+to just "Sample.312"
+
+```{r}
+processed_counts <- lapply(counts, function(x) {
+    rownames(x) <- x[, 1]
+    x <- x[, -1, drop = FALSE]
+    colnames(x) <- gsub("bams.", "", colnames(x))
+    colnames(x) <- gsub("Aligned.sortedByCoord.out.bam", "", colnames(x))
+    return(x)
+})
+head(processed_counts[[1]])
+#now combine all matrices into one
+gene_matrix <- do.call(what = cbind, args = processed_counts)
+head(gene_matrix)
+```
+
+And thus we have a gene count matrix. Notice there are a lot of zeros, we can filter it later. For now we can save it as a .csv file or something.
+
+```{r eval = FALSE}
+write.csv(gene_matrix, "gene_matrix.csv")
+```
 

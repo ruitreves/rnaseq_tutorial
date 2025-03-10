@@ -367,7 +367,8 @@ this computer.</p>
 <p>The way this guide will work is as follows:</p>
 <p>First we will see a script of the entire process (or pipeline, if you
 like).</p>
-<p>Next we will look individually at the steps of the process.</p>
+<p>Next we will look individually at the steps of the process followed
+by a deeper dive into fastq files.</p>
 <p>Last we will dig into some of the code used during the process.</p>
 <p>Feel free to jump to whichever section you need.</p>
 </div>
@@ -494,6 +495,9 @@ trimmomatic:</p>
 call it. If I didnt, I would get an error. See below.</p>
 <pre class="bash"><code>trimmomatic-0.39.jar</code></pre>
 <pre><code>## Error in running command bash</code></pre>
+<p>We get an error here because my computer doesn’t know where to find
+trimmomatic-0.39.jar unless I specify where it is, since its not in my
+path.</p>
 <p>You can see what your path is by doing the following in bash:</p>
 <pre class="bash"><code>echo $PATH</code></pre>
 <pre><code>## /opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/homebrew/bin:/opt/homebrew/sbin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/X11/bin</code></pre>
@@ -504,8 +508,232 @@ on your computer if you unintentionally delete, move, or change things
 in your path. You should be sure of what you’re doing before you remove
 anything from your path or do anything to change it.</p>
 </div>
-<div id="step-1" class="section level2">
-<h2>Step 1</h2>
+<div id="step-1-running-fastqc" class="section level2">
+<h2>Step 1: Running fastqc</h2>
+<p>Fastqc is simple and easy to use. The generic way to use it is as
+follows:</p>
+<pre class="bash"><code>path/to/fastqc path/to/fastq/files/sample.fastq --outdir=path/to/fastqc_reports</code></pre>
+<p>Or, instead of passing just one fastq file as the argument, we can
+pass (supply as an arugment) a list of fastq files.</p>
+<pre class="bash"><code>path/to/fastqc path/to/fastq/files/*.fastq --outdir=path/to/fastqc_reports</code></pre>
+<p>Where path/to/fastq/files/*.fastq is a list of all files ending with
+“.fastq” in the folder path/to/fastq/files.</p>
+<p>Fastqc is the only software in the main part of the pipeline that we
+can pass a list. Each of the others require that we pass each file
+individually. This is the reason why we do not use a for loop for
+fastqc, but do use a for loop for each of the others.</p>
+<p>You can read more about fastqc here: <a href="https://www.bioinformatics.babraham.ac.uk/projects/fastqc/" class="uri">https://www.bioinformatics.babraham.ac.uk/projects/fastqc/</a></p>
+</div>
+<div id="step-2-running-trimmomatic" class="section level2">
+<h2>Step 2: Running Trimmomatic</h2>
+<p>As mentioned previously, the subsequent steps in the script involve
+using for loops to process our data. For loops will be discussed further
+in Part 3, and here we will only focus on using trimmomatic.</p>
+<p>Here is a generic example of using trimmomatic.</p>
+<pre class="bash"><code>java -jar path/to/trimmomatic.jar \
+    PE -threads 16 -phred33 \
+    path/to/fastq/files/sample1_R1.fastq path/to/fastq/files/sample1_R2.fastq \
+    trimmed_fastq/trimmed_paired_sample1_R1.fastq trimmed_fastq/trimmed_unpaired_sample1_R1.fastq \
+    trimmed_fastq/trimmed_paired_sample1_R2.fastq trimmed_fastq/trimmed_unpaired_sample1_R2.fastq \
+    ILLUMINACLIP:/Users/hardestylab4/Desktop/star/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10:2:TRUE LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 \
+    MINLEN:36</code></pre>
+<p>trimmomatic is a java application, which means that we have to use
+java to run it. Thats why the first line starts with calling java. A
+.jar file is like a java executable, and by using “-jar” we tell java to
+expect a .jar file. Then we specify which .jar file,
+“path/to/trimmomatic.jar”.</p>
+<p>The reason we put a “&quot; at the end of each line (except the last line)
+is because we are telling bash that although we are done writing on the
+current line, dont execute the code yet. Instead, expect more input on
+the next line. This isnt a requirement, it just makes the code easier
+for us to read and write, since we dont have to cram all our code onto
+the same line.</p>
+<p>PE is an “option” of trimmomatic, where we specify to trimmomatic
+that were supplying Pair End fastq data. -threads 16 and -phred33 are
+also options, the former specifies how many computer threads (think
+computing power) to use and the latter tells trimmomatic how the quality
+information of the fastq files is encoded. These fastq files use phred33
+encoding, but some use phred64. More on this later in the section about
+fastq files.</p>
+<p>The next line: “path/to/fastq/files/sample1_R1.fastq
+path/to/fastq/files/sample1_R2.fastq &quot; is our input. We pass in the
+forward read first and then the reverse read.</p>
+<p>Next: “trimmed_fastq/trimmed_paired_sample1_R1.fastq
+trimmed_fastq/trimmed_unpaired_sample1_R1.fastq &quot; is the first part of
+the output. This is the output for the forward read only. We’re telling
+trimmomatic to put this output in the folder”trimmed_paired”, and then
+specifying the name of the output file with
+“trimmed_paired_sample1_R1.fastq”. The other part also goes to the same
+folder, but its “trimmed_unpaired_sample1_R1.fastq”, which consists of
+the mates of the reads which were filtered out of the other part of the
+pair (i.e., the reverse read). Put another way, when a certain read in
+either part of the pair (forward or reverse) is discarded during the
+trimming process but the same read in the other part of the pair is not
+discarded, we end up with unpaired reads. If you’re utterly confused
+about how the same trimming process could remove one part of a pair and
+not the other, see the section about fastq files. For our purposes here,
+we cant use the unpaired reads since the rest of the analysis requires
+that we use paired reads. The unpaired reads are not useless, but their
+uses are beyond the scope of this guide.</p>
+<p>The following line is the same as the previous one except for the
+reverse read.</p>
+<p>The line:
+ILLUMINACLIP:/Users/hardestylab4/Desktop/star/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10:2:TRUE
+LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15<br />
+is specifying the trimming options we want to use. The trimmomatic
+manual (<a href="http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf" class="uri">http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf</a>)
+will be required in order to understand everything happening here.
+Briefly, the ILLUMINACLIP option is how trimmomatic removes adapter
+sequences, and the file path following it leads to TruSeq3-PE-2.fa,
+which comes with trimmomatic and includes known adapter sequences that
+we want to remove. This adapter file is not suitable for every cohort of
+fastq files. In order to reliably remove adapter sequences you need to
+know what the adapter sequences actually are. However, lots of
+sequencing companies use the same adapters, and trimmomatic’s adapter
+files are usually pretty good.</p>
+<p>The 2:30:10:2:TRUE is telling trimmomatic how to find adapter
+sequences and trim them. The explanation of each part is best left to
+the manual, but we will discuss the last part: “TRUE”. By specifying
+TRUE here, we tell trimmomatic to keep both parts of a read pair even if
+one part is clipped (i.e., trimmed) significantly due to adapter sequnce
+contamination. This does not, however, override the quality trimming
+step. So even if we keep one part of a read past this step, we could
+still end up filtering it out later, and thus its mate would end up in
+an unpaired output file.</p>
+<p>LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 is for quality trimming, and
+the explanation of these is best left to the manual.</p>
+<p>Last, we specify MINLEN, which is the minimum length of a sequence to
+keep.</p>
+</div>
+<div id="step-3-running-star" class="section level2">
+<h2>Step 3: Running STAR</h2>
+<p>STAR requires a lot of RAM. You should be sure your computer is
+suffient to use it before starting. Find the manual here: <a href="https://physiology.med.cornell.edu/faculty/skrabanek/lab/angsd/lecture_notes/STARmanual.pdf" class="uri">https://physiology.med.cornell.edu/faculty/skrabanek/lab/angsd/lecture_notes/STARmanual.pdf</a>.</p>
+<p>Before using STAR as we did in the script above, we have to generate
+a special genome index that STAR can use. Here is one way to do it:</p>
+<pre class="bash"><code>STAR --runThreadN 8 \
+    --runMode genomeGenerate \
+    --genomeDir data/index_39 \
+    --genomeFastaFiles data/ref/Mus_musculus.GRCm39.dna.primary_assembly.fa \
+    --sjdbGTFfile data/ref/Mus_musculus.GRCm39.112.gtf \
+    --sjdbOverhang 149 \</code></pre>
+<p>The breakdown of this code will be more brief than in the previous
+step.</p>
+<p>First, we call STAR and tell it to run in genomeGenerate mode. We
+then use genomeDir to tell STAR where to put its newly generated
+reference. We supply a fasta (.fa) file of genome sequences as well as a
+gene annotation file (.gtf). You only have to do this step once for each
+genome of interest to you, or if a newer versions of the genome becomes
+available or something like that. What I did is created a directory on
+my computer for all of my STAR stuff to go. You may have noticed this in
+the trimmomatic step:
+ILLUMINACLIP:/Users/hardestylab4/Desktop/star/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa.
+and of course also in the STAR step: –genomeDir
+/Users/hardestylab4/Desktop/star/data/index_39. I keep trimmomatic in
+this directory as well just because its conveinient (? spelling)</p>
+<p>After generating the index, we can run STAR. Here is a generic use
+case:</p>
+<pre class="bash"><code>STAR --runThreadN 16 \
+    --readFilesIn trimmed_fastq/trimmed_paired_sample1_R1.fastq trimmed_fastq/trimmed_paired_sample1_R2.fastq \
+    --genomeDir /Users/hardestylab4/Desktop/star/data/index_39 \
+    --outSAMtype BAM SortedByCoordinate \
+    --outFileNamePrefix bams/sample1</code></pre>
+<p>We first call STAR and pass our pair of input files. We specify the
+reference genome and how to format the output. In this case, we want
+sorted bam files. We also specify a output file name prefix. This will
+have STAR name each output file as
+bams/sample1somethingsomethingsomething. The “bams/” part at the
+beginning is meant to send the files to a folder called “bams”. In
+addition to the bam files, STAR will output a log for each bam file it
+creates, which can be used to assess whether your STAR parameters are
+too strict, etc.</p>
+</div>
+<div id="step-4-running-featurecounts" class="section level2">
+<h2>Step 4: Running featureCounts</h2>
+<p>The last step in the pipeline uses bam files to generate gene-level
+counts. Here is an example:</p>
+<pre class="bash"><code>featureCounts --largestOverlap -a /Users/hardestylab4/Desktop/star/data/ref/Mus_musculus.GRCm39.112.gtf \
+    -t exon -g gene_id -s 0 -p --countReadPairs -T 8 \
+    -o counts/sample1_counts.txt sample1.bam</code></pre>
+<p>We start by calling the program, specify some options and the path to
+our gene annotation file (Mus_musculus.GRCm39.112.gtf). The last line
+specifies the output and the input. You can read about featureCounts and
+the options used here in the manual <a href="https://subread.sourceforge.net/SubreadUsersGuide.pdf" class="uri">https://subread.sourceforge.net/SubreadUsersGuide.pdf</a>.</p>
+<p>The output of featureCounts is a .txt file (you could have it output
+.csv, .tsv, etc. by simply changing the file extension in the output).
+One output file will be created for each input file. In order to make a
+gene count matrix that includes each sample, some further processing is
+necessary. This further processing will be done in R, and demonstrated
+in the following step. featureCounts also outputs a summary file for
+each input file that gives statistics about the process. We wont use
+these in the next step.</p>
+</div>
+<div id="step-5-making-the-gene-count-matrix" class="section level2">
+<h2>Step 5: Making the Gene Count Matrix</h2>
+<p>The first thing we will do is organize the folder where the count
+files are. We will leave each of the count files in the counts/ folder,
+but move all the count summary files to a new directory inside the
+counts folder, counts/summary. We achieve this with bash:</p>
+<pre class="bash"><code>mkdir counts/summary
+mv counts/*.summary counts/summary</code></pre>
+<p>Now each of the summary files is in counts/summary. We can now use R
+to create a gene count matrix from the count files.</p>
+<pre class="r"><code>count_files &lt;- list.files(&quot;counts&quot;, full.names = TRUE, pattern = &quot;.txt&quot;)
+read_in &lt;- lapply(count_files, read.table, header = TRUE)
+print(head(read_in[[1]]))</code></pre>
+<pre><code>##               Geneid Chr           Start             End Strand Length bams.Sample.312Aligned.sortedByCoord.out.bam
+## 1 ENSMUSG00000104478   1       108344807       108347562      +   2756                                            0
+## 2 ENSMUSG00000104385   1         6980784         6981446      +    663                                            0
+## 3 ENSMUSG00000101231   1       108540067       108540244      -    178                                            0
+## 4 ENSMUSG00000102135 1;1 6986783;6993624 6987219;6993812    +;+    626                                            0
+## 5 ENSMUSG00000103282   1         6999983         7000012      +     30                                            0
+## 6 ENSMUSG00000101097   1       108697865       108699733      +   1869                                            0</code></pre>
+<p>These look a bit messy, so we will clean them up. We only really want
+the Geneid column and the bams.Sample.312Aligned.sortedByCoord.out.bam
+column, i.e., the 1st and 7th columns.</p>
+<pre class="r"><code>counts &lt;- lapply(read_in, function(x) {
+    temp &lt;- x[, c(1, 7)]
+    return(temp)
+})
+print(head(counts[[1]]))</code></pre>
+<pre><code>##               Geneid bams.Sample.312Aligned.sortedByCoord.out.bam
+## 1 ENSMUSG00000104478                                            0
+## 2 ENSMUSG00000104385                                            0
+## 3 ENSMUSG00000101231                                            0
+## 4 ENSMUSG00000102135                                            0
+## 5 ENSMUSG00000103282                                            0
+## 6 ENSMUSG00000101097                                            0</code></pre>
+<p>Now we have only the columns we want. The next thing we must do is
+change the first column, Geneid, to be the rownames of each of our
+matrices, then combine them all into one matrix aligned on the new
+rownames (Geneid). We’ll also change the column names to from something
+like “bams.Sample.312Aligned.sortedByCoord.out.bam” to just
+“Sample.312”</p>
+<pre class="r"><code>processed_counts &lt;- lapply(counts, function(x) {
+    rownames(x) &lt;- x[, 1]
+    x &lt;- x[, -1, drop = FALSE]
+    colnames(x) &lt;- gsub(&quot;bams.&quot;, &quot;&quot;, colnames(x))
+    colnames(x) &lt;- gsub(&quot;Aligned.sortedByCoord.out.bam&quot;, &quot;&quot;, colnames(x))
+    return(x)
+})
+head(processed_counts[[1]])</code></pre>
+<pre><code>##                    Sample.312
+## ENSMUSG00000104478          0
+## ENSMUSG00000104385          0
+## ENSMUSG00000101231          0
+## ENSMUSG00000102135          0
+## ENSMUSG00000103282          0
+## ENSMUSG00000101097          0</code></pre>
+<pre class="r"><code>#now combine all matrices into one
+gene_matrix &lt;- do.call(what = cbind, args = processed_counts)
+head(gene_matrix)</code></pre>
+<pre><code>##                    Sample.312 Sample.319 Sample.347 Sample.375
+## ENSMUSG00000104478          0          0          0          0
+## ENSMUSG00000104385          0          0          0          0
+## ENSMUSG00000101231          0          0          0          0
+## ENSMUSG00000102135          0          0          0          0
+## ENSMUSG00000103282          0          0          0          0
+## ENSMUSG00000101097          0          0          0          0</code></pre>
 </div>
 </div>
 
