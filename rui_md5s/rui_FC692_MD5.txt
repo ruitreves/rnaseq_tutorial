@@ -1,0 +1,2 @@
+8a6297e99fbc0cddf6c25ce400a034ae  fastq/FC692_1.fq.gz
+ff1e605dd58e4051f2a0eb858c932e5a  fastq/FC692_2.fq.gz

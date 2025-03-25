@@ -1,0 +1,2 @@
+6fcf67e7a8c88bd6323f39195f07cabd  fastq/FC678_1.fq.gz
+fdcaaf5b3c0895a69f929fdf95097f06  fastq/FC678_2.fq.gz

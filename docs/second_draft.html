@@ -371,6 +371,13 @@ like).</p>
 by a deeper dive into fastq files.</p>
 <p>Last we will dig into some of the code used during the process.</p>
 <p>Feel free to jump to whichever section you need.</p>
+<p>Here is a brief overview:</p>
+<p>Fastq files are generated from biological samples and contain raw
+biological sequence data (ATCG etc). Fastq files require trimming to
+remove low quality information as well as contamination. Then, fastq
+files are mapped to a reference genome in order to identify genes; this
+step results in bam files. Bam files can then be processed into gene
+level counts, and the data can be processed in something like R.</p>
 </div>
 <div id="part-1-the-entire-process" class="section level1">
 <h1>Part 1: The Entire Process</h1>
@@ -390,14 +397,13 @@ fastqc ${fastq_location}/* --outdir quality_report/before_trimming
 
 mkdir trimmed_fastq
 
-for file in ${fastq_location}/*R1.fastq.gz; do
-    filename=$(basename $file &quot;_R1.fastq.gz&quot;)
-    new_filename=${filename//_2024*}
+for file in ${fastq_location}/*1.fq.gz; do
+    filename=$(basename $file &quot;_1.fq.gz&quot;)
     java -jar /Users/hardestylab4/Desktop/star/Trimmomatic-0.39/trimmomatic-0.39.jar \
     PE -threads 16 -phred33 \
-    fastq/${filename}_R1.fastq.gz fastq/${filename}_R2.fastq.gz \
-    trimmed_fastq/trimmed_paired${new_filename}_R1.fastq.gz trimmed_fastq/trimmed_unpaired${new_filename}_R1.fastq.gz \
-    trimmed_fastq/trimmed_paired${new_filename}_R2.fastq.gz trimmed_fastq/trimmed_unpaired${new_filename}_R2.fastq.gz \
+    fastq/${filename}_1.fq.gz fastq/${filename}_2.fq.gz \
+    trimmed_fastq/trimmed_paired${filename}_1.fq.gz trimmed_fastq/trimmed_unpaired${filename}_1.fq.gz \
+    trimmed_fastq/trimmed_paired${filename}_2.fq.gz trimmed_fastq/trimmed_unpaired${filename}_2.fq.gz \
     ILLUMINACLIP:/Users/hardestylab4/Desktop/star/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10:2:TRUE LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 \
     MINLEN:36
 done
@@ -412,12 +418,12 @@ fastqc trimmed_fastq/trimmed_paired* --outdir=quality_report/after_trimming
 
 mkdir bams
 
-for file in trimmed_fastq/trimmed_paired*R1.fastq.gz; do
-    filename=$(basename $file &quot;_R1.fastq.gz&quot;)
+for file in trimmed_fastq/trimmed_paired*1.fq.gz; do
+    filename=$(basename $file &quot;_1.fq.gz&quot;)
     sample=${filename//trimmed_paired}
     echo $sample
     STAR --runThreadN 16 \
-        --readFilesIn trimmed_fastq/${filename}_R1.fastq.gz trimmed_fastq/${filename}_R2.fastq.gz \
+        --readFilesIn trimmed_fastq/${filename}_1.fq.gz trimmed_fastq/${filename}_2.fq.gz \
         --readFilesCommand gunzip -c \
         --genomeDir /Users/hardestylab4/Desktop/star/data/index_39 \
         --outSAMtype BAM SortedByCoordinate \
@@ -681,13 +687,13 @@ to create a gene count matrix from the count files.</p>
 <pre class="r"><code>count_files &lt;- list.files(&quot;counts&quot;, full.names = TRUE, pattern = &quot;.txt&quot;)
 read_in &lt;- lapply(count_files, read.table, header = TRUE)
 print(head(read_in[[1]]))</code></pre>
-<pre><code>##               Geneid Chr           Start             End Strand Length bams.Sample.312Aligned.sortedByCoord.out.bam
-## 1 ENSMUSG00000104478   1       108344807       108347562      +   2756                                            0
-## 2 ENSMUSG00000104385   1         6980784         6981446      +    663                                            0
-## 3 ENSMUSG00000101231   1       108540067       108540244      -    178                                            0
-## 4 ENSMUSG00000102135 1;1 6986783;6993624 6987219;6993812    +;+    626                                            0
-## 5 ENSMUSG00000103282   1         6999983         7000012      +     30                                            0
-## 6 ENSMUSG00000101097   1       108697865       108699733      +   1869                                            0</code></pre>
+<pre><code>##               Geneid Chr           Start             End Strand Length bams.FC678Aligned.sortedByCoord.out.bam
+## 1 ENSMUSG00000104478   1       108344807       108347562      +   2756                                       0
+## 2 ENSMUSG00000104385   1         6980784         6981446      +    663                                       0
+## 3 ENSMUSG00000101231   1       108540067       108540244      -    178                                       0
+## 4 ENSMUSG00000102135 1;1 6986783;6993624 6987219;6993812    +;+    626                                       1
+## 5 ENSMUSG00000103282   1         6999983         7000012      +     30                                       0
+## 6 ENSMUSG00000101097   1       108697865       108699733      +   1869                                       0</code></pre>
 <p>These look a bit messy, so we will clean them up. We only really want
 the Geneid column and the bams.Sample.312Aligned.sortedByCoord.out.bam
 column, i.e., the 1st and 7th columns.</p>
@@ -696,13 +702,13 @@ column, i.e., the 1st and 7th columns.</p>
     return(temp)
 })
 print(head(counts[[1]]))</code></pre>
-<pre><code>##               Geneid bams.Sample.312Aligned.sortedByCoord.out.bam
-## 1 ENSMUSG00000104478                                            0
-## 2 ENSMUSG00000104385                                            0
-## 3 ENSMUSG00000101231                                            0
-## 4 ENSMUSG00000102135                                            0
-## 5 ENSMUSG00000103282                                            0
-## 6 ENSMUSG00000101097                                            0</code></pre>
+<pre><code>##               Geneid bams.FC678Aligned.sortedByCoord.out.bam
+## 1 ENSMUSG00000104478                                       0
+## 2 ENSMUSG00000104385                                       0
+## 3 ENSMUSG00000101231                                       0
+## 4 ENSMUSG00000102135                                       1
+## 5 ENSMUSG00000103282                                       0
+## 6 ENSMUSG00000101097                                       0</code></pre>
 <p>Now we have only the columns we want. The next thing we must do is
 change the first column, Geneid, to be the rownames of each of our
 matrices, then combine them all into one matrix aligned on the new
@@ -717,23 +723,325 @@ like “bams.Sample.312Aligned.sortedByCoord.out.bam” to just
     return(x)
 })
 head(processed_counts[[1]])</code></pre>
-<pre><code>##                    Sample.312
-## ENSMUSG00000104478          0
-## ENSMUSG00000104385          0
-## ENSMUSG00000101231          0
-## ENSMUSG00000102135          0
-## ENSMUSG00000103282          0
-## ENSMUSG00000101097          0</code></pre>
+<pre><code>##                    FC678
+## ENSMUSG00000104478     0
+## ENSMUSG00000104385     0
+## ENSMUSG00000101231     0
+## ENSMUSG00000102135     1
+## ENSMUSG00000103282     0
+## ENSMUSG00000101097     0</code></pre>
 <pre class="r"><code>#now combine all matrices into one
 gene_matrix &lt;- do.call(what = cbind, args = processed_counts)
 head(gene_matrix)</code></pre>
-<pre><code>##                    Sample.312 Sample.319 Sample.347 Sample.375
-## ENSMUSG00000104478          0          0          0          0
-## ENSMUSG00000104385          0          0          0          0
-## ENSMUSG00000101231          0          0          0          0
-## ENSMUSG00000102135          0          0          0          0
-## ENSMUSG00000103282          0          0          0          0
-## ENSMUSG00000101097          0          0          0          0</code></pre>
+<pre><code>##                    FC678 FC692 FC700 FC704
+## ENSMUSG00000104478     0     0     0     0
+## ENSMUSG00000104385     0     0     0     0
+## ENSMUSG00000101231     0     0     0     0
+## ENSMUSG00000102135     1     2     0     2
+## ENSMUSG00000103282     0     0     0     0
+## ENSMUSG00000101097     0     0     0     0</code></pre>
+<p>And thus we have a gene count matrix. Notice there are a lot of
+zeros, we can filter it later. For now we can save it as a .csv file or
+something.</p>
+<pre class="r"><code>write.csv(gene_matrix, &quot;gene_matrix.csv&quot;)</code></pre>
+</div>
+<div id="a-bit-about-fastq-files" class="section level2">
+<h2>A bit about fastq files</h2>
+<p>From wikipedia: FASTQ format is a text-based format for storing both
+a biological sequence (usually nucleotide sequence) and its
+corresponding quality scores. (<a href="https://en.wikipedia.org/wiki/FASTQ_format" class="uri">https://en.wikipedia.org/wiki/FASTQ_format</a>)</p>
+<p>Usually, there is one fastq file per biological sample, or two fastq
+files when paired end sequencing is done. In this guide, we have paired
+end data and thus two fastq files per sample. Each fastq file is
+comprised of many reads, and can be several GB in size. For this reason,
+the files are usually delivered in a compressed format; .gz is common,
+and as shown in this guide, there is no need to decompress before
+processing. However, compressed files can take considerably longer to
+process than uncompressed files. You can consider the trade off between
+time and storage space.</p>
+<p>Each read in a fastq file has four lines. Again, from wikipedia:</p>
+<p>Field 1 begins with a ‘@’ character and is followed by a sequence
+identifier and an optional description (like a FASTA title line).</p>
+<p>Field 2 is the raw sequence letters.</p>
+<p>Field 3 begins with a ‘+’ character and is optionally followed by the
+same sequence identifier (and any description) again.</p>
+<p>Field 4 encodes the quality values for the sequence in Field 2, and
+must contain the same number of symbols as letters in the sequence.</p>
+<p>There are two demo fastq files included here for your viewing
+pleasure. They are the first 100 reads (400 lines) of two real fastq
+files and are uncompressed. The real fastq files used in this guide are
+not included due to their size. We can view uncompressed fastq files in
+a terminal as follows:</p>
+<pre class="bash"><code>less demo_R1.fastq</code></pre>
+<p>or as:</p>
+<pre class="bash"><code>head -n 16 demo_R1.fastq</code></pre>
+<pre><code>## @LH00328:501:22MHKKLT4:2:1101:11590:1042 1:N:0:GNGTGTCACA+ATCGTTGGTC
+## CNCTAAGGATAACCCTAAGTTTATGGACACAGTGGCGGAGAAGGCGCTACAGGAATACCGCAGGAAAAGCCGTGCGGAATGAGATAGAAGCATCACCTTCCTATATGTAGGAGTGTCTGGGAGGGAATCTCCCAGCTCCCCGAGGTGGCT
+## +
+## I#IIIIIIIIII9IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IIIIIIIIIIIIIIIIIIIIIIIII9IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IIIIIIIIIII
+## @LH00328:501:22MHKKLT4:2:1101:11687:1042 1:N:0:GNGTGTCACA+ATCGTTGGTC
+## GNGTCAACCCCAACTCTCGTGGAGGCTGCAAGAAACCTAGGAAGAGTGGGCACCAAGTGTTGTACACTTCCTGAAGATCAGAGACTGCCTTGTGTGGAAGACTATCTGTCTGCAATCCTGAACCGTGTGTGTCTGCTGCATGAGAAGACC
+## +
+## I#IIIIIIIIIIIII9IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IIIIIIIIIIIII9IIIIIIIIIIII9IIIIIIIIIIIIIIIIIIIIIIIIII-IIIIIIIIIIIIIIIIIIIIIIIII
+## @LH00328:501:22MHKKLT4:2:1101:24162:1042 1:N:0:GNGTGTCACA+ATCGTTGGTC
+## CNTAGATGTCCGGGGCTGCACGCGCGCTACACTGACTGGCTCAGCGTGTGCCTACCCTACGCCGGCAGGCGCGGGTAACCCGTTGAACCCCATTCGTGATGGGGATCGGGGATTGCAATTATTCCCCATGAACGAGGAATTCCCAGTAAG
+## +
+## I#II9IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IIIIIIIIIII9I-IIIIIIIIIIIIIII
+## @LH00328:501:22MHKKLT4:2:1101:24210:1042 1:N:0:GNGTGTCACA+ATCGTTGGTC
+## GNGGAATTAAAGGGGATTGGGTAAGAAACACAAGCCTTGGCCTCCTCTGGGTGAGACTGATCCTCTGCTGGGTGAGTCTTTGAGCTGGCAAACTGTTTCTTGACAGGCTGTACTATTATTGCCTTCTGTCAGGCTGCAGGGACATCTCTA
+## +
+## I#IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII</code></pre>
+<p>The first command: “less” will show all lines of the file, whereas
+with “head” we can specify the number of lines to show. We only show the
+output of “head” here to save page space. Heres a look at demo_R2.fastq,
+the reverse read.</p>
+<pre class="bash"><code>head -n 16 demo_R2.fastq</code></pre>
+<pre><code>## @LH00328:501:22MHKKLT4:2:1101:11590:1042 2:N:0:GNGTGTCACA+ATCGTTGGTC
+## NGCAAGGCGGCTTTTATTGGATTAGTTGCGTGGGGGAATCAGTTCTTCCCGAGAGCAGCAAGTGCAGGCATTAGTGTACAGAATCCAGAGGAAGGGCAGGCTGCTTGGGTGAGGCCTACTCGCCTGGAGACATGTGGAGTTCTCTAGGGG
+## +
+## #IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IIIIIIIIIIIIIIIIIII9IIIIII
+## @LH00328:501:22MHKKLT4:2:1101:11687:1042 2:N:0:GNGTGTCACA+ATCGTTGGTC
+## NGGGACATATGTTTCATCAACTGTCAGAGCAGAGAAGCATGGCCGCCTTTCCACCAGGGATCCACTACAGCACTTGGTAACATGCTCACTCACTGGGGTCTTCTCATGCAGCAGACACACACGGTTCAGGATTGCAGACAGATAGTCTTC
+## +
+## #IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII99IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII9IIIIIIIIII
+## @LH00328:501:22MHKKLT4:2:1101:24162:1042 2:N:0:GNGTGTCACA+ATCGTTGGTC
+## NCGACTTTTACTTCCTCTAGATAGTCAAGTTCGACCGTCTTCTCAGCGCTCCGCCAGGGCCGTGGGCCGACCCCGGCGGGGCCGATCCGAGGGCCTCACTAAACCATCCAATCGGTAGTAGCGACGGACGGTGTGTACAAAGGGCAGGGA
+## +
+## #II9IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII-IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+## @LH00328:501:22MHKKLT4:2:1101:24210:1042 2:N:0:GNGTGTCACA+ATCGTTGGTC
+## NTTTCAGATTAGCATATGGAAATTAGCATATGGAAATTTGCTTCAGATTAGCATATGGAAATTTGGCTTAAGAACTGGATGTCAGGAACAGACCCCAGAGAGAACAGATAACAAGTAGAACCAAGCAACTCCTCCTGGGTCCTCAGCAGA
+## +
+## #IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII</code></pre>
+<p>Notice that there are differences between the forward and the reverse
+reads. Also notice that the reverse read is not the reverse complement
+of the forward read; this is a common misconception. The piece of
+biological sequence being read does not necessarily contain 150 bases
+(or nucleotides), which is the number of bases that this particular
+sequencing machine can read at a time. If its longer, we may have only
+the first part and the last part of the actual sequence with some middle
+part missing. Or, conversely, we could have some overlap in the middle
+of our reads if the sequence was in fact shorter than the read length
+(150). Luckily, we dont have to worry about matching the read pairs up
+because the computer can do it for us.</p>
+<p>Notice also that the first line of each read in the R1 file almost
+matches the first line of the corresponding read in the R2 file. The
+difference between them is this: 1:N:0 vs 2:N:0. This indicates which
+read is the forward read (1:N:0) and which is the reverse (2:N:0).
+Sometimes fastq files are delivered “interleaved”, which means that both
+reads are present in one file rather than one forward file and one
+reverse file. It is essential to de-interleave the files before
+processing them according to this guide.</p>
+<p>That’s it on fastq files.</p>
+</div>
+<div id="the-code" class="section level2">
+<h2>The Code</h2>
+<p>Without exposure to bash or R before reading this guide, the code is
+surely confusing. In this section we seek to remedy any confusion. We
+will start by analysing the code from Part 1, the entire pipeline, and
+then we will discuss the code in Part2, Step 5, which is the R code used
+to process the end result of the pipeline.</p>
+<p>In Part 1, the first line of code is this:</p>
+<pre class="bash"><code>#!/bin/bash</code></pre>
+<p>This is called a “shebang”, and its purpose is to specify the
+interpreter used to execute the script. Basically, it tells the computer
+to use bash to run the script and “/bin/bash” is the actual path to bash
+on my computer.</p>
+<p>We also define and reference variables in the script. The first
+example of this is:</p>
+<pre class="bash"><code>fastq_location=&quot;fastq&quot;</code></pre>
+<p>Here we created the variable (or defined, if you like)
+“fastq_location” and assigned it the value “fastq”. This was kind of
+redundant, and was mostly for illustrative purposes.</p>
+<p>We reference this variable in this line:</p>
+<pre class="bash"><code>fastqc ${fastq_location}/* --outdir quality_report/before_trimming</code></pre>
+<p>To access variables, we need to use the “$” character.</p>
+<pre class="bash"><code>fastq_location=&quot;fastq&quot;
+echo $fastq_location</code></pre>
+<pre><code>## fastq</code></pre>
+<p>The next command used in the script is “mkdir”, which is short for
+“make directory”. This command creates a new folder with the specified
+name. We also sometimes use “mkdir -p”, which can create subdirectories
+at the same time. We see this here:</p>
+<pre class="bash"><code>mkdir -p quality_report/before_trimming</code></pre>
+<p>This creates the directory “quality_report” and simultaneously the
+subdirectory “before_trimming”. In other words its like doing this:</p>
+<pre class="bash"><code>mkdir quality_report
+mkdir quality_report/before_trimming</code></pre>
+<p>but using the “-p” option is faster and requires less typing.</p>
+<p>We already discussed using the softwares and the code used to specify
+options and things, and we wont do it again here.</p>
+<p>In several places we use a special character, “*” which is the
+wildcard character. In other words, “*” means “anything”. Lets look at
+an example, but first, here’s another useful command: “ls”</p>
+<pre class="bash"><code>ls fastq</code></pre>
+<pre><code>## FC678_1.fq.gz
+## FC678_2.fq.gz
+## FC692_1.fq.gz
+## FC692_2.fq.gz
+## FC700_1.fq.gz
+## FC700_2.fq.gz
+## FC704_1.fq.gz
+## FC704_2.fq.gz</code></pre>
+<p>This command simply lists the files or folders contained in some
+directory we specify. Heres one way to use the “*”, what if we want only
+the forward reads?</p>
+<pre class="bash"><code>ls fastq/*1.fq.gz</code></pre>
+<pre><code>## fastq/FC678_1.fq.gz
+## fastq/FC692_1.fq.gz
+## fastq/FC700_1.fq.gz
+## fastq/FC704_1.fq.gz</code></pre>
+<p>Simple right? What if we wanted to see only the files that start with
+“FC7”?</p>
+<pre class="bash"><code>ls fastq/FC7*</code></pre>
+<pre><code>## fastq/FC700_1.fq.gz
+## fastq/FC700_2.fq.gz
+## fastq/FC704_1.fq.gz
+## fastq/FC704_2.fq.gz</code></pre>
+<p>As you deal with more complex patterns this can get more complicated,
+but for now this is enough to demonstrate the general idea.</p>
+<p>The next bit of code we’ll discuss is the for loop. We use this
+technique several times throughout the script. The general idea of a for
+loop is like this:</p>
+<pre class="bash"><code>for some_item in a_list; do
+    some_task
+done</code></pre>
+<p>For loops are a common tool in many programming language, and the
+general idea is the same regardless of language. The syntax of for loops
+can be different depending on the language, however. The example above
+is written in bash, so it uses bash syntax. A for loop in R, for
+example, uses different syntax but the idea is the same. What the for
+loop does is loops through some list of items (files, folders, columns
+of a matrix, etc.) and performs a similar task on each one. Here is a
+simple example:</p>
+<pre class="bash"><code>for i in {1,2,3,4}; do
+    echo $i
+done</code></pre>
+<pre><code>## 1
+## 2
+## 3
+## 4</code></pre>
+<p>Lets try this with actual files.</p>
+<pre class="bash"><code>for file in fastq/*; do
+    echo $file
+done</code></pre>
+<pre><code>## fastq/FC678_1.fq.gz
+## fastq/FC678_2.fq.gz
+## fastq/FC692_1.fq.gz
+## fastq/FC692_2.fq.gz
+## fastq/FC700_1.fq.gz
+## fastq/FC700_2.fq.gz
+## fastq/FC704_1.fq.gz
+## fastq/FC704_2.fq.gz</code></pre>
+<p>Notice that in the first for loop I used the letter “i” after the
+word for, and in the second I used “file”. Both of these choices were
+mostly arbitrary, I could have used almost any word or letter in place
+of either. The only reason I chose to use “i” and “file” is because they
+are descriptive of what were looping through and may give some person
+reading the code later a better idea of whats going on.</p>
+<p>Another thing we do frequently in the script is manipulate the
+filenames to fit our purposes. For instance, when we do a process that
+requires us to process the pairs of fastq files together at the same
+time, we dont actually want to look through each individual file, but
+rather through each <em>pair</em> of files. We can achieve this using
+the wildcard character to get only the forward reads (or reverse reads
+it doesnt actually matter), and then trim off the suffix (1.fq.gz) that
+specifies its a forward read and add back in the reverse file suffix
+(2.fq.gz). Or, we could simply replace the 1 with a 2. Well see how to
+do both.</p>
+<pre class="bash"><code>for R1 in fastq/*1.fq.gz; do
+    sample=${R1//1.fq.gz}
+    R2=${sample}2.fq.gz
+    echo $sample
+    echo $R1
+    echo $R2
+done</code></pre>
+<pre><code>## fastq/FC678_
+## fastq/FC678_1.fq.gz
+## fastq/FC678_2.fq.gz
+## fastq/FC692_
+## fastq/FC692_1.fq.gz
+## fastq/FC692_2.fq.gz
+## fastq/FC700_
+## fastq/FC700_1.fq.gz
+## fastq/FC700_2.fq.gz
+## fastq/FC704_
+## fastq/FC704_1.fq.gz
+## fastq/FC704_2.fq.gz</code></pre>
+<p>Now well see the replacement:</p>
+<pre class="bash"><code>for R1 in fastq/*1.fq.gz; do
+    R2=${R1/1/2}
+    echo $R1
+    echo $R2
+done</code></pre>
+<pre><code>## fastq/FC678_1.fq.gz
+## fastq/FC678_2.fq.gz
+## fastq/FC692_1.fq.gz
+## fastq/FC692_2.fq.gz
+## fastq/FC700_1.fq.gz
+## fastq/FC700_2.fq.gz
+## fastq/FC704_1.fq.gz
+## fastq/FC704_2.fq.gz</code></pre>
+<p>Both of these could be useful in different scenarios. Lets look at
+one more technique, basename.</p>
+<p>basename is used to remove the filepath of some file and return only
+the actual filename. We can also use it to trim parts of the filename
+off all at the same time.</p>
+<pre class="bash"><code>for R1 in fastq/*1.fq.gz; do
+    sample=$(basename $R1 &quot;1.fq.gz&quot;)
+    R2=${sample}2.fq.gz
+    echo $sample
+    echo $R1
+    echo $R2
+done</code></pre>
+<pre><code>## FC678_
+## fastq/FC678_1.fq.gz
+## FC678_2.fq.gz
+## FC692_
+## fastq/FC692_1.fq.gz
+## FC692_2.fq.gz
+## FC700_
+## fastq/FC700_1.fq.gz
+## FC700_2.fq.gz
+## FC704_
+## fastq/FC704_1.fq.gz
+## FC704_2.fq.gz</code></pre>
+<p>This covers each of the techniques we use for this analysis. Lets
+move on to the R code.</p>
+<p>The approach used to process the output of featureCounts is somewhat
+of an advanced, no nonsense approach. Whenever we want to do the same
+thing multipe times, we should be careful in how much we repeat
+ourselves. There are several reasons for this. First, it’s invites
+error; were more likely to make a mistake if we manually do the same
+process over and over. It is also inefficient and wastes time and page
+space, making our code harder to read. Of course, we will still look at
+all the details of whats actually happening with the code.</p>
+<p>In the first block of code, we use the list.files function to list
+all the files of the “counts” folder that contain the pattern “.txt” in
+their names. We also specify “full.names = TRUE” in order to include the
+file’s full relative filepath. We assign the output of this operation to
+the variable “count_files”, which is thus a <em>list</em> whose elements
+are each of the individual file paths and file names contained in the
+“counts” folder that adhere to the specified pattern requirement.</p>
+<p>Then we use the lapply function, short for “list apply” to apply all
+at once the read.table function and storing the output in the read_in
+variable.</p>
+<p>Effectively, this process is equivalent to individually reading in
+each of the count.txt files and storing them all in a list.</p>
+<p>We then use the lapply function to apply to each element of read_in,
+a function defined “on the fly”, where we select only the first and the
+seventh column of each element of read in and save the new tables to a
+new list, counts. We could have put the definition of this function
+outside of the lapply function, assigning it a name and everything, but
+since we only wanted to use it once for this very specific tast, it was
+simpler to just define it inside the lapply function.</p>
+<p>Again we make use of the lapply function to apply another function
+defined on the fly to turn the first column of each table (the Geneids)
+into the rownames of the table, and then we remove the “bams.” and
+“Aligned.sortedByCoord.out.bam” portion of the remaining column’s name
+so that only the sample name is left.</p>
+<p>Last, we use the do.call function to cbind (column bind) each of the
+elements of processed counts into one matrix. This results in a
+raw_counts matrix that</p>
 </div>
 </div>
 

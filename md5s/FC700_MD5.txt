@@ -1,0 +1,2 @@
+82199d37499bf6d69ab0caad7776476b  FC700_1.fq.gz
+ffffc84fb90cfd811b0a69371baead14  FC700_2.fq.gz
