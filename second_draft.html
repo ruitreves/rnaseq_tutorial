@@ -484,8 +484,8 @@ is:</p>
 come after are us telling fastqc what to do.</p>
 <p>Another thing to note is that if you go to your computer’s command
 line and type “fastqc”, probably nothing will happen, unless of course
-you already have fastqc downloaded and accessible via your path, or
-you’re command prompt is already at the folder containing the fastqc
+you already have fastqc downloaded and accessible via your path, or your
+command prompt is already at the folder containing the fastqc
 executable.</p>
 <p>All that to say, you need to download each of these softwares and if
 you want to be able to call them from “anywhere” on your computer (like
@@ -548,12 +548,12 @@ java to run it. Thats why the first line starts with calling java. A
 .jar file is like a java executable, and by using “-jar” we tell java to
 expect a .jar file. Then we specify which .jar file,
 “path/to/trimmomatic.jar”.</p>
-<p>The reason we put a “&quot; at the end of each line (except the last line)
-is because we are telling bash that although we are done writing on the
-current line, dont execute the code yet. Instead, expect more input on
-the next line. This isnt a requirement, it just makes the code easier
-for us to read and write, since we dont have to cram all our code onto
-the same line.</p>
+<p>The reason we put a “\” at the end of each line (except the last
+line) is because we are telling bash that although we are done writing
+on the current line, dont execute the code yet. Instead, expect more
+input on the next line. This isnt a requirement, it just makes the code
+easier for us to read and write, since we dont have to cram all our code
+onto the same line.</p>
 <p>PE is an “option” of trimmomatic, where we specify to trimmomatic
 that were supplying Pair End fastq data. -threads 16 and -phred33 are
 also options, the former specifies how many computer threads (think
@@ -562,12 +562,12 @@ information of the fastq files is encoded. These fastq files use phred33
 encoding, but some use phred64. More on this later in the section about
 fastq files.</p>
 <p>The next line: “path/to/fastq/files/sample1_R1.fastq
-path/to/fastq/files/sample1_R2.fastq &quot; is our input. We pass in the
+path/to/fastq/files/sample1_R2.fastq \” is our input. We pass in the
 forward read first and then the reverse read.</p>
 <p>Next: “trimmed_fastq/trimmed_paired_sample1_R1.fastq
-trimmed_fastq/trimmed_unpaired_sample1_R1.fastq &quot; is the first part of
+trimmed_fastq/trimmed_unpaired_sample1_R1.fastq \” is the first part of
 the output. This is the output for the forward read only. We’re telling
-trimmomatic to put this output in the folder”trimmed_paired”, and then
+trimmomatic to put this output in the folder “trimmed_paired”, and then
 specifying the name of the output file with
 “trimmed_paired_sample1_R1.fastq”. The other part also goes to the same
 folder, but its “trimmed_unpaired_sample1_R1.fastq”, which consists of
@@ -585,9 +585,8 @@ uses are beyond the scope of this guide.</p>
 reverse read.</p>
 <p>The line:
 ILLUMINACLIP:/Users/hardestylab4/Desktop/star/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10:2:TRUE
-LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15<br />
-is specifying the trimming options we want to use. The trimmomatic
-manual (<a href="http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf" class="uri">http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf</a>)
+LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 \ is specifying the trimming
+options we want to use. The trimmomatic manual (<a href="http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf" class="uri">http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf</a>)
 will be required in order to understand everything happening here.
 Briefly, the ILLUMINACLIP option is how trimmomatic removes adapter
 sequences, and the file path following it leads to TruSeq3-PE-2.fa,
@@ -695,7 +694,7 @@ print(head(read_in[[1]]))</code></pre>
 ## 5 ENSMUSG00000103282   1         6999983         7000012      +     30                                       0
 ## 6 ENSMUSG00000101097   1       108697865       108699733      +   1869                                       0</code></pre>
 <p>These look a bit messy, so we will clean them up. We only really want
-the Geneid column and the bams.Sample.312Aligned.sortedByCoord.out.bam
+the Geneid column and the bams.FC678Aligned.sortedByCoord.out.bam
 column, i.e., the 1st and 7th columns.</p>
 <pre class="r"><code>counts &lt;- lapply(read_in, function(x) {
     temp &lt;- x[, c(1, 7)]
@@ -713,8 +712,7 @@ print(head(counts[[1]]))</code></pre>
 change the first column, Geneid, to be the rownames of each of our
 matrices, then combine them all into one matrix aligned on the new
 rownames (Geneid). We’ll also change the column names to from something
-like “bams.Sample.312Aligned.sortedByCoord.out.bam” to just
-“Sample.312”</p>
+like “bams.FC678Aligned.sortedByCoord.out.bam” to just “FC678”.</p>
 <pre class="r"><code>processed_counts &lt;- lapply(counts, function(x) {
     rownames(x) &lt;- x[, 1]
     x &lt;- x[, -1, drop = FALSE]
@@ -883,7 +881,7 @@ an example, but first, here’s another useful command: “ls”</p>
 ## FC704_1.fq.gz
 ## FC704_2.fq.gz</code></pre>
 <p>This command simply lists the files or folders contained in some
-directory we specify. Heres one way to use the “*”, what if we want only
+directory we specify. Heres one way to use the “*”: what if we want only
 the forward reads?</p>
 <pre class="bash"><code>ls fastq/*1.fq.gz</code></pre>
 <pre><code>## fastq/FC678_1.fq.gz
@@ -941,7 +939,7 @@ reading the code later a better idea of whats going on.</p>
 <p>Another thing we do frequently in the script is manipulate the
 filenames to fit our purposes. For instance, when we do a process that
 requires us to process the pairs of fastq files together at the same
-time, we dont actually want to look through each individual file, but
+time, we dont actually want to loop through each individual file, but
 rather through each <em>pair</em> of files. We can achieve this using
 the wildcard character to get only the forward reads (or reverse reads
 it doesnt actually matter), and then trim off the suffix (1.fq.gz) that
@@ -1021,12 +1019,27 @@ their names. We also specify “full.names = TRUE” in order to include the
 file’s full relative filepath. We assign the output of this operation to
 the variable “count_files”, which is thus a <em>list</em> whose elements
 are each of the individual file paths and file names contained in the
-“counts” folder that adhere to the specified pattern requirement.</p>
+“counts” folder that adhere to the specified pattern requirement.
+Remember that we first had to organize the counts folder to sequester
+the .txt.summary files somewhere else.</p>
 <p>Then we use the lapply function, short for “list apply” to apply all
 at once the read.table function and storing the output in the read_in
 variable.</p>
-<p>Effectively, this process is equivalent to individually reading in
-each of the count.txt files and storing them all in a list.</p>
+<pre class="r"><code>count_files &lt;- list.files(&quot;counts&quot;, full.names = TRUE, pattern = &quot;.txt&quot;)
+read_in &lt;- lapply(count_files, read.table, header = TRUE)
+print(head(read_in[[1]]))</code></pre>
+<pre><code>##               Geneid Chr           Start             End Strand Length bams.FC678Aligned.sortedByCoord.out.bam
+## 1 ENSMUSG00000104478   1       108344807       108347562      +   2756                                       0
+## 2 ENSMUSG00000104385   1         6980784         6981446      +    663                                       0
+## 3 ENSMUSG00000101231   1       108540067       108540244      -    178                                       0
+## 4 ENSMUSG00000102135 1;1 6986783;6993624 6987219;6993812    +;+    626                                       1
+## 5 ENSMUSG00000103282   1         6999983         7000012      +     30                                       0
+## 6 ENSMUSG00000101097   1       108697865       108699733      +   1869                                       0</code></pre>
+<p>The equivalent of the above code would be using the read.table
+function over and over to read in each of the count files one at a time
+and then creating a list whose elements were those files. Having only
+four files isnt so bad, but imagine if we had lots more. Thats the
+reason we took the above approach.</p>
 <p>We then use the lapply function to apply to each element of read_in,
 a function defined “on the fly”, where we select only the first and the
 seventh column of each element of read in and save the new tables to a
@@ -1034,14 +1047,56 @@ new list, counts. We could have put the definition of this function
 outside of the lapply function, assigning it a name and everything, but
 since we only wanted to use it once for this very specific tast, it was
 simpler to just define it inside the lapply function.</p>
+<pre class="r"><code>counts &lt;- lapply(read_in, function(x) {
+    temp &lt;- x[, c(1, 7)]
+    return(temp)
+})
+print(head(counts[[1]]))</code></pre>
+<pre><code>##               Geneid bams.FC678Aligned.sortedByCoord.out.bam
+## 1 ENSMUSG00000104478                                       0
+## 2 ENSMUSG00000104385                                       0
+## 3 ENSMUSG00000101231                                       0
+## 4 ENSMUSG00000102135                                       1
+## 5 ENSMUSG00000103282                                       0
+## 6 ENSMUSG00000101097                                       0</code></pre>
 <p>Again we make use of the lapply function to apply another function
 defined on the fly to turn the first column of each table (the Geneids)
 into the rownames of the table, and then we remove the “bams.” and
 “Aligned.sortedByCoord.out.bam” portion of the remaining column’s name
 so that only the sample name is left.</p>
+<pre class="r"><code>processed_counts &lt;- lapply(counts, function(x) {
+    rownames(x) &lt;- x[, 1]
+    x &lt;- x[, -1, drop = FALSE]
+    colnames(x) &lt;- gsub(&quot;bams.&quot;, &quot;&quot;, colnames(x))
+    colnames(x) &lt;- gsub(&quot;Aligned.sortedByCoord.out.bam&quot;, &quot;&quot;, colnames(x))
+    return(x)
+})
+head(processed_counts[[1]])</code></pre>
+<pre><code>##                    FC678
+## ENSMUSG00000104478     0
+## ENSMUSG00000104385     0
+## ENSMUSG00000101231     0
+## ENSMUSG00000102135     1
+## ENSMUSG00000103282     0
+## ENSMUSG00000101097     0</code></pre>
+<pre class="r"><code>#now combine all matrices into one
+gene_matrix &lt;- do.call(what = cbind, args = processed_counts)
+head(gene_matrix)</code></pre>
+<pre><code>##                    FC678 FC692 FC700 FC704
+## ENSMUSG00000104478     0     0     0     0
+## ENSMUSG00000104385     0     0     0     0
+## ENSMUSG00000101231     0     0     0     0
+## ENSMUSG00000102135     1     2     0     2
+## ENSMUSG00000103282     0     0     0     0
+## ENSMUSG00000101097     0     0     0     0</code></pre>
 <p>Last, we use the do.call function to cbind (column bind) each of the
 elements of processed counts into one matrix. This results in a
-raw_counts matrix that</p>
+raw_counts matrix that we can use to perform differential expression
+analysis or what have you. Remember, these are <em>raw</em> counts. They
+need to be “normalized” or something before we perform any real analysis
+of them, and we should also filter out genes which arent expressed much
+by any of our samples. There are good guides online for this, and one I
+use commonly is the DESeq2 vignette.</p>
 </div>
 </div>
 
