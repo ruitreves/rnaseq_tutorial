@@ -126,9 +126,7 @@ fastqc ${fastq_location}/* --outdir quality_report/before_trimming
 The first part: fastqc, is us telling fastqc to run. The parts that come after are us telling fastqc what to do. 
 
 Another thing to note is that if you go to your computer's command line and type "fastqc", probably nothing will happen, unless of course you already
-have fastqc downloaded and accessible via your path, or you're command prompt is already at the folder containing the fastqc executable. 
-
-
+have fastqc downloaded and accessible via your path, or your command prompt is already at the folder containing the fastqc executable. 
 
 All that to say, you need to download each of these softwares and if you want to be able to call them from "anywhere" on your computer (like in a 
 specific project directory where your fastq files are) you will need to put them somewhere that your computer knows where to look. Your computer will
@@ -198,7 +196,7 @@ java -jar path/to/trimmomatic.jar \
 trimmomatic is a java application, which means that we have to use java to run it. Thats why the first line starts with calling java. A .jar file is like
 a java executable, and by using "-jar" we tell java to expect a .jar file. Then we specify which .jar file, "path/to/trimmomatic.jar". 
 
-The reason we put a "\" at the end of each line (except the last line) is because we are telling bash that although we are done writing on the current line,
+The reason we put a "\\" at the end of each line (except the last line) is because we are telling bash that although we are done writing on the current line,
 dont execute the code yet. Instead, expect more input on the next line. This isnt a requirement, it just makes the code easier for us to read and write, 
 since we dont have to cram all our code onto the same line. 
 
@@ -206,10 +204,10 @@ PE is an "option" of trimmomatic, where we specify to trimmomatic that were supp
 the former specifies how many computer threads (think computing power) to use and the latter tells trimmomatic how the quality information of the fastq files
 is encoded. These fastq files use phred33 encoding, but some use phred64. More on this later in the section about fastq files. 
 
-The next line: "path/to/fastq/files/sample1_R1.fastq path/to/fastq/files/sample1_R2.fastq \" is our input. We pass in the forward read first and then the 
+The next line: "path/to/fastq/files/sample1_R1.fastq path/to/fastq/files/sample1_R2.fastq \\" is our input. We pass in the forward read first and then the 
 reverse read. 
 
-Next: "trimmed_fastq/trimmed_paired_sample1_R1.fastq trimmed_fastq/trimmed_unpaired_sample1_R1.fastq \" is the first part of the output. This is the output
+Next: "trimmed_fastq/trimmed_paired_sample1_R1.fastq trimmed_fastq/trimmed_unpaired_sample1_R1.fastq \\" is the first part of the output. This is the output
 for the forward read only. We're telling trimmomatic to put this output in the folder "trimmed_paired", and then specifying the name of the output file with
 "trimmed_paired_sample1_R1.fastq". The other part also goes to the same folder, but its "trimmed_unpaired_sample1_R1.fastq", which consists of the mates
 of the reads which were filtered out of the other part of the pair (i.e., the reverse read). Put another way, when a certain read in either part of the 
@@ -220,7 +218,7 @@ are not useless, but their uses are beyond the scope of this guide.
 
 The following line is the same as the previous one except for the reverse read.
 
-The line: ILLUMINACLIP:/Users/hardestylab4/Desktop/star/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10:2:TRUE LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 \
+The line: ILLUMINACLIP:/Users/hardestylab4/Desktop/star/Trimmomatic-0.39/adapters/TruSeq3-PE-2.fa:2:30:10:2:TRUE LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 \\
 is specifying the trimming options we want to use. The trimmomatic manual (http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf)
 will be required in order to understand everything happening here. Briefly, the ILLUMINACLIP option is how trimmomatic removes adapter sequences, and the 
 file path following it leads to TruSeq3-PE-2.fa, which comes with trimmomatic and includes known adapter sequences that we want to remove. This adapter file
@@ -312,7 +310,7 @@ read_in <- lapply(count_files, read.table, header = TRUE)
 print(head(read_in[[1]]))
 ```
 
-These look a bit messy, so we will clean them up. We only really want the Geneid column and the bams.Sample.312Aligned.sortedByCoord.out.bam column, i.e.,
+These look a bit messy, so we will clean them up. We only really want the Geneid column and the bams.FC678Aligned.sortedByCoord.out.bam column, i.e.,
 the 1st and 7th columns.
 
 ```{r}
@@ -324,8 +322,8 @@ print(head(counts[[1]]))
 ```
 
 Now we have only the columns we want. The next thing we must do is change the first column, Geneid, to be the rownames of each of our matrices, then combine
-them all into one matrix aligned on the new rownames (Geneid). We'll also change the column names to from something like "bams.Sample.312Aligned.sortedByCoord.out.bam"
-to just "Sample.312"
+them all into one matrix aligned on the new rownames (Geneid). We'll also change the column names to from something like "bams.FC678Aligned.sortedByCoord.out.bam"
+to just "FC678".
 
 ```{r}
 processed_counts <- lapply(counts, function(x) {
@@ -461,7 +459,7 @@ another useful command: "ls"
 ls fastq
 ```
 
-This command simply lists the files or folders contained in some directory we specify. Heres one way to use the "\*", what if we want only the forward reads?
+This command simply lists the files or folders contained in some directory we specify. Heres one way to use the "\*": what if we want only the forward reads?
 
 ```{bash}
 ls fastq/*1.fq.gz
@@ -508,7 +506,7 @@ almost any word or letter in place of either. The only reason I chose to use "i"
 person reading the code later a better idea of whats going on. 
 
 Another thing we do frequently in the script is manipulate the filenames to fit our purposes. For instance, when we do a process that requires us to process the pairs of 
-fastq files together at the same time, we dont actually want to look through each individual file, but rather through each *pair* of files. We can achieve this using the 
+fastq files together at the same time, we dont actually want to loop through each individual file, but rather through each *pair* of files. We can achieve this using the 
 wildcard character to get only the forward reads (or reverse reads it doesnt actually matter), and then trim off the suffix (1.fq.gz) that specifies its a forward read and 
 add back in the reverse file suffix (2.fq.gz). Or, we could simply replace the 1 with a 2. Well see how to do both.
 
@@ -555,18 +553,51 @@ happening with the code.
 
 In the first block of code, we use the list.files function to list all the files of the "counts" folder that contain the pattern ".txt" in their names. We also specify
 "full.names = TRUE" in order to include the file's full relative filepath. We assign the output of this operation to the variable "count_files", which is thus a *list* 
-whose elements are each of the individual file paths and file names contained in the "counts" folder that adhere to the specified pattern requirement.
+whose elements are each of the individual file paths and file names contained in the "counts" folder that adhere to the specified pattern requirement. Remember that we first
+had to organize the counts folder to sequester the .txt.summary files somewhere else.
 
 Then we use the lapply function, short for "list apply" to apply all at once the read.table function and storing the output in the read_in variable. 
 
-Effectively, this process is equivalent to individually reading in each of the count.txt files and storing them all in a list. 
+```{r}
+count_files <- list.files("counts", full.names = TRUE, pattern = ".txt")
+read_in <- lapply(count_files, read.table, header = TRUE)
+print(head(read_in[[1]]))
+```
+
+The equivalent of the above code would be using the read.table function over and over to read in each of the count files one at a time and then creating a list whose 
+elements were those files. Having only four files isnt so bad, but imagine if we had lots more. Thats the reason we took the above approach. 
 
 We then use the lapply function to apply to each element of read_in, a function defined "on the fly", where we select only the first and the seventh column of each element
 of read in and save the new tables to a new list, counts. We could have put the definition of this function outside of the lapply function, assigning it a name and everything,
 but since we only wanted to use it once for this very specific tast, it was simpler to just define it inside the lapply function. 
 
+```{r}
+counts <- lapply(read_in, function(x) {
+    temp <- x[, c(1, 7)]
+    return(temp)
+})
+print(head(counts[[1]]))
+```
+
 Again we make use of the lapply function to apply another function defined on the fly to turn the first column of each table (the Geneids) into the rownames of the table, 
 and then we remove the "bams." and "Aligned.sortedByCoord.out.bam" portion of the remaining column's name so that only the sample name is left. 
 
-Last, we use the do.call function to cbind (column bind) each of the elements of processed counts into one matrix. This results in a raw_counts matrix that 
+```{r}
+processed_counts <- lapply(counts, function(x) {
+    rownames(x) <- x[, 1]
+    x <- x[, -1, drop = FALSE]
+    colnames(x) <- gsub("bams.", "", colnames(x))
+    colnames(x) <- gsub("Aligned.sortedByCoord.out.bam", "", colnames(x))
+    return(x)
+})
+head(processed_counts[[1]])
+#now combine all matrices into one
+gene_matrix <- do.call(what = cbind, args = processed_counts)
+head(gene_matrix)
+```
+
+Last, we use the do.call function to cbind (column bind) each of the elements of processed counts into one matrix. This results in a raw_counts matrix that we can use to 
+perform differential expression analysis or what have you. Remember, these are *raw* counts. They need to be "normalized" or something before we perform any real analysis 
+of them, and we should also filter out genes which arent expressed much by any of our samples. There are good guides online for this, and one I use commonly is the DESeq2
+vignette.
 
