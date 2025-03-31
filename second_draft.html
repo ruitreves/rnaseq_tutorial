@@ -1042,10 +1042,10 @@ four files isnt so bad, but imagine if we had lots more. Thats the
 reason we took the above approach.</p>
 <p>We then use the lapply function to apply to each element of read_in,
 a function defined “on the fly”, where we select only the first and the
-seventh column of each element of read in and save the new tables to a
+seventh column of each element of read_in and save the new tables to a
 new list, counts. We could have put the definition of this function
 outside of the lapply function, assigning it a name and everything, but
-since we only wanted to use it once for this very specific tast, it was
+since we only wanted to use it once for this very specific task, it was
 simpler to just define it inside the lapply function.</p>
 <pre class="r"><code>counts &lt;- lapply(read_in, function(x) {
     temp &lt;- x[, c(1, 7)]
@@ -1097,6 +1097,9 @@ need to be “normalized” or something before we perform any real analysis
 of them, and we should also filter out genes which arent expressed much
 by any of our samples. There are good guides online for this, and one I
 use commonly is the DESeq2 vignette.</p>
+<div id="end" class="section level3">
+<h3>End</h3>
+</div>
 </div>
 </div>
 

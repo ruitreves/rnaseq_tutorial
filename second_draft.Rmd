@@ -568,8 +568,8 @@ The equivalent of the above code would be using the read.table function over and
 elements were those files. Having only four files isnt so bad, but imagine if we had lots more. Thats the reason we took the above approach. 
 
 We then use the lapply function to apply to each element of read_in, a function defined "on the fly", where we select only the first and the seventh column of each element
-of read in and save the new tables to a new list, counts. We could have put the definition of this function outside of the lapply function, assigning it a name and everything,
-but since we only wanted to use it once for this very specific tast, it was simpler to just define it inside the lapply function. 
+of read_in and save the new tables to a new list, counts. We could have put the definition of this function outside of the lapply function, assigning it a name and everything,
+but since we only wanted to use it once for this very specific task, it was simpler to just define it inside the lapply function. 
 
 ```{r}
 counts <- lapply(read_in, function(x) {
@@ -601,3 +601,4 @@ perform differential expression analysis or what have you. Remember, these are *
 of them, and we should also filter out genes which arent expressed much by any of our samples. There are good guides online for this, and one I use commonly is the DESeq2
 vignette.
 
+### End
